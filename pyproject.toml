@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ejariflow-ai"
+version = "0.1.0"
+description = "Dubai tenancy contract parsing, RERA rent cap checks and 3D portfolio compliance"
+readme = "README.md"
+license = "MIT"
+authors = [{ name = "Sanjaydeep Gowrishankar" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[project.scripts]
+ejariflow = "ejariflow.server:main"
+
+[tool.setuptools.packages.find]
+include = ["ejariflow*"]
