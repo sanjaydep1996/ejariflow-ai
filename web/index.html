@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EjariFlow AI</title>
+<style>
+  :root { --bg:#0d1117; --panel:#151b24; --line:#263040; --ink:#e8edf5; --mute:#8b97a8; --gold:#e3b04b; --ok:#3fbf7f; --warn:#f2a33a; --due:#f07a3a; --bad:#e5484d; --cap:#c25cf0; --vac:#4b5566; }
+  * { box-sizing:border-box }
+  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Segoe UI", Inter, Arial, sans-serif; height:100vh; display:grid; grid-template-columns:380px 1fr; grid-template-rows:auto 1fr; }
+  header { grid-column:1/3; display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--line); }
+  header h1 { font-size:18px; margin:0; letter-spacing:.2px } header h1 b { color:var(--gold) }
+  header span { color:var(--mute); font-size:13px }
+  aside { overflow-y:auto; padding:16px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px }
+  .card h2 { font-size:12px; letter-spacing:1.2px; text-transform:uppercase; color:var(--mute); margin:0 0 10px }
+  .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px }
+  .kpi b { display:block; font-size:20px } .kpi small { color:var(--mute); font-size:11px }
+  .legend { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; color:var(--mute) }
+  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px }
+  label { display:block; font-size:12px; color:var(--mute); margin:8px 0 4px }
+  input, textarea { width:100%; background:#0f141b; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit }
+  textarea { min-height:120px; resize:vertical; font:12px/1.5 ui-monospace, Menlo, monospace }
+  button { margin-top:10px; background:var(--gold); color:#1a1408; border:0; border-radius:8px; padding:9px 14px; font-weight:700; cursor:pointer }
+  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line) }
+  .row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px }
+  .out { margin-top:10px; font-size:13px } .out .ok { color:var(--ok) } .out .bad { color:var(--bad) }
+  .finding { border-left:3px solid var(--bad); padding:6px 10px; margin:6px 0; background:#1a1f28; border-radius:0 8px 8px 0 }
+  .finding.medium { border-color:var(--warn) } .finding.low { border-color:var(--vac) }
+  .finding small { color:var(--mute); display:block }
+  main { position:relative } canvas { display:block }
+  #tip { position:absolute; pointer-events:none; background:#0b0f15ee; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12px; display:none; max-width:260px }
+  #note { position:absolute; left:16px; bottom:12px; color:var(--mute); font-size:11px }
+  @media (max-width: 900px) { body { grid-template-columns:1fr; grid-template-rows:auto auto 60vh } header { grid-column:1 } aside { border-right:0 } }
+</style>
+</head>
+<body>
+<header><h1>Ejari<b>Flow</b> AI</h1><span>Dubai tenancy contracts, RERA rent caps and portfolio compliance</span></header>
+<aside>
+  <section class="card"><h2>Portfolio</h2><div class="kpis" id="kpis"></div></section>
+  <section class="card"><h2>Legend</h2><div class="legend">
+    <span><i style="background:var(--ok)"></i>Lease &gt; 6 months</span><span><i style="background:var(--warn)"></i>Ends in 3–6 months</span>
+    <span><i style="background:var(--due)"></i>Ends in &lt; 90 days</span><span><i style="background:var(--bad)"></i>Expired</span>
+    <span><i style="background:var(--cap)"></i>Proposed rent over RERA cap</span><span><i style="background:var(--vac)"></i>Vacant</span></div></section>
+  <section class="card"><h2>RERA rent increase check</h2>
+    <div class="row">
+      <div><label for="cur">Current rent</label><input id="cur" type="number" value="80000"></div>
+      <div><label for="prop">Proposed</label><input id="prop" type="number" value="90000"></div>
+      <div><label for="avg">Area average</label><input id="avg" type="number" value="100000"></div>
+    </div>
+    <button id="check">Check increase</button><div class="out" id="checkOut"></div>
+  </section>
+  <section class="card"><h2>Contract audit</h2>
+    <label for="text">Paste tenancy contract text (English or Arabic)</label><textarea id="text"></textarea>
+    <label for="avg2">Average rent for similar units (from the RERA index)</label><input id="avg2" type="number" value="100000">
+    <button id="audit">Audit contract</button> <button class="ghost" id="sample">Load sample</button>
+    <div class="out" id="auditOut"></div>
+  </section>
+</aside>
+<main id="stage"><div id="tip"></div><div id="note"></div></main>
+
+<script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
+<script type="module">
+import * as THREE from "three";
+import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const aed = n => "AED " + Number(n).toLocaleString("en-AE");
+const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json());
+const COLORS = { later: 0x3fbf7f, due_180: 0xf2a33a, due_90: 0xf07a3a, expired: 0xe5484d, over_cap: 0xc25cf0, vacant: 0x4b5566 };
+
+// ----- RERA check -----
+document.getElementById("check").onclick = async () => {
+  const r = await post("/api/rera/check", { current_rent: cur.value, proposed_rent: prop.value, average_rent: avg.value });
+  document.getElementById("checkOut").innerHTML = r.error ? `<span class="bad">${esc(r.error)}</span>` :
+    `<b class="${r.compliant ? "ok" : "bad"}">${r.compliant ? "Within the cap" : "Over the cap"}</b><br>${esc(r.reason)}<br><small>Max rent: ${aed(r.max_rent)} · ${esc(r.rule)}</small>`;
+};
+
+// ----- Contract audit -----
+document.getElementById("sample").onclick = async () => { text.value = await fetch("/sample-contract.txt").then(r => r.ok ? r.text() : ""); };
+document.getElementById("audit").onclick = async () => {
+  const r = await post("/api/contract/audit", { text: text.value, average_rent: avg2.value });
+  const box = document.getElementById("auditOut");
+  if (r.error) { box.innerHTML = `<span class="bad">${esc(r.error)}</span>`; return; }
+  const c = r.contract, a = r.audit;
+  box.innerHTML = `<div><b>${esc(c.property.building || "Unknown building")}</b> unit ${esc(c.property.unit || "?")} · ${c.annual_rent ? aed(c.annual_rent) : "rent not found"} · Ejari ${esc(c.ejari_number || "not found")}</div>
+    <div style="margin-top:6px"><b class="${a.compliant ? "ok" : "bad"}">${a.compliant ? "No problems found" : a.findings.length + " finding(s)"}</b></div>
+    ${a.findings.map(f => `<div class="finding ${f.severity}">${esc(f.message)}<small>${f.clause ? "Clause " + f.clause + " · " : ""}${esc(f.rule)}</small></div>`).join("")}
+    ${a.unchecked.length ? `<small style="color:var(--mute)">${a.unchecked.map(esc).join("<br>")}</small>` : ""}
+    <small style="color:var(--mute);display:block;margin-top:6px">${esc(a.disclaimer)}</small>`;
+};
+
+// ----- 3D portfolio -----
+const stage = document.getElementById("stage"), tip = document.getElementById("tip");
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+stage.appendChild(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0d1117);
+scene.fog = new THREE.Fog(0x0d1117, 120, 260);
+const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000); camera.position.set(70, 70, 90);
+const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.target.set(0, 12, 0);
+scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x20242c, 1.1));
+const sun = new THREE.DirectionalLight(0xffe2b0, 1.4); sun.position.set(60, 100, 40); scene.add(sun);
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: 0x1a1f27 }));
+ground.rotation.x = -Math.PI / 2; scene.add(ground);
+
+const pickables = [];
+function label(text) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 96;
+  const g = c.getContext("2d"); g.fillStyle = "#e8edf5"; g.font = "600 40px -apple-system, Arial"; g.textAlign = "center"; g.fillText(text, 256, 60);
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true })); s.scale.set(24, 4.5, 1); return s;
+}
+
+function build(data) {
+  const t = data.totals;
+  document.getElementById("kpis").innerHTML = [
+    [t.units, "units"], [t.occupancy_percent + "%", "occupied"], ["AED " + (t.annual_rent / 1e6).toFixed(1) + "M", "annual rent"],
+    [t.due_90, "end < 90 days"], [t.expired, "expired"], [t.over_cap, "over RERA cap"]].map(([v, l]) => `<div class="kpi"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
+  document.getElementById("note").textContent = data.note;
+  const spacing = 34, n = data.buildings.length;
+  data.buildings.forEach((b, i) => {
+    const x0 = (i - (n - 1) / 2) * spacing, w = b.units_per_floor * 2.2;
+    const group = new THREE.Group(); group.position.set(x0, 0, 0); scene.add(group);
+    const base = new THREE.Mesh(new THREE.BoxGeometry(w + 2, 0.6, 6), new THREE.MeshStandardMaterial({ color: 0x2a313d })); base.position.y = 0.3; group.add(base);
+    b.units.forEach(u => {
+      const m = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 3.6), new THREE.MeshStandardMaterial({ color: COLORS[u.status] || 0x888888, roughness: .6, emissive: COLORS[u.status] || 0, emissiveIntensity: .08 }));
+      m.position.set(-w / 2 + (u.index - 0.5) * 2.2, 0.6 + (u.floor - 0.5) * 2.2, 0);
+      m.userData = { building: b, unit: u }; group.add(m); pickables.push(m);
+    });
+    const l = label(b.name); l.position.set(0, 0.6 + b.floors * 2.2 + 4, 0); group.add(l);
+  });
+}
+
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
+renderer.domElement.addEventListener("pointermove", e => {
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
+  ray.setFromCamera(mouse, camera);
+  const hit = ray.intersectObjects(pickables)[0];
+  if (!hit) { tip.style.display = "none"; return; }
+  const { building: b, unit: u } = hit.object.userData;
+  tip.innerHTML = `<b>${esc(b.name)} · Unit ${esc(u.unit)}</b><br>${esc(b.area)}<br>` + (u.occupied ?
+    `Rent ${aed(u.annual_rent)} · ends ${esc(u.lease_end)} (${u.days_to_expiry} days)` + (u.rent_check ? `<br>Proposed ${u.rent_check.proposed_percent}% · cap ${u.rent_check.max_percent}% ${u.rent_check.compliant ? "✓" : "✗"}` : "") : "Vacant");
+  tip.style.display = "block"; tip.style.left = (e.clientX - r.left + 14) + "px"; tip.style.top = (e.clientY - r.top + 14) + "px";
+});
+
+function resize() {
+  const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
+  const d = Math.max(110, 150 / Math.min(camera.aspect, 1.6));      // narrower view: step back so every building fits
+  camera.position.set(d * 0.55, d * 0.5, d * 0.85);
+}
+addEventListener("resize", resize); resize();
+(function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
+fetch("/api/portfolio").then(r => r.json()).then(build);
+</script>
+</body>
+</html>

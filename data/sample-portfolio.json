@@ -1,0 +1,2044 @@
+{
+ "generated_for": "2026-11-16",
+ "note": "Fictional sample portfolio. Average rents are illustrative, not RERA index values.",
+ "buildings": [
+  {
+   "id": "marina-crest",
+   "name": "Marina Crest Tower",
+   "area": "Dubai Marina",
+   "floors": 12,
+   "units_per_floor": 6,
+   "avg_rent": 110000,
+   "units": [
+    {
+     "unit": "101",
+     "floor": 1,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 69000.0,
+     "lease_end": "2027-09-25",
+     "proposed_rent": 69000.0
+    },
+    {
+     "unit": "102",
+     "floor": 1,
+     "index": 2,
+     "occupied": false
+    },
+    {
+     "unit": "103",
+     "floor": 1,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 64000.0,
+     "lease_end": "2027-07-13",
+     "proposed_rent": 67000.0
+    },
+    {
+     "unit": "104",
+     "floor": 1,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "105",
+     "floor": 1,
+     "index": 5,
+     "occupied": false
+    },
+    {
+     "unit": "106",
+     "floor": 1,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 109000.0,
+     "lease_end": "2026-12-29",
+     "proposed_rent": 114000.0
+    },
+    {
+     "unit": "201",
+     "floor": 2,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 94000.0,
+     "lease_end": "2026-11-27",
+     "proposed_rent": 113000.0
+    },
+    {
+     "unit": "202",
+     "floor": 2,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 63000.0,
+     "lease_end": "2027-02-17",
+     "proposed_rent": 63000.0
+    },
+    {
+     "unit": "203",
+     "floor": 2,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-05-29",
+     "proposed_rent": 71000.0
+    },
+    {
+     "unit": "204",
+     "floor": 2,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 94000.0,
+     "lease_end": "2027-08-09",
+     "proposed_rent": 99000.0
+    },
+    {
+     "unit": "205",
+     "floor": 2,
+     "index": 5,
+     "occupied": false
+    },
+    {
+     "unit": "206",
+     "floor": 2,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 66000.0,
+     "lease_end": "2027-10-26",
+     "proposed_rent": 66000.0
+    },
+    {
+     "unit": "301",
+     "floor": 3,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 97000.0,
+     "lease_end": "2027-07-08",
+     "proposed_rent": 116000.0
+    },
+    {
+     "unit": "302",
+     "floor": 3,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 79000.0,
+     "lease_end": "2027-08-22",
+     "proposed_rent": 88000.0
+    },
+    {
+     "unit": "303",
+     "floor": 3,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 75000.0,
+     "lease_end": "2027-01-27",
+     "proposed_rent": 79000.0
+    },
+    {
+     "unit": "304",
+     "floor": 3,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "305",
+     "floor": 3,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 81000.0,
+     "lease_end": "2027-06-13",
+     "proposed_rent": 87000.0
+    },
+    {
+     "unit": "306",
+     "floor": 3,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 65000.0,
+     "lease_end": "2027-07-16",
+     "proposed_rent": 73000.0
+    },
+    {
+     "unit": "401",
+     "floor": 4,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 80000.0,
+     "lease_end": "2027-07-04",
+     "proposed_rent": 90000.0
+    },
+    {
+     "unit": "402",
+     "floor": 4,
+     "index": 2,
+     "occupied": false
+    },
+    {
+     "unit": "403",
+     "floor": 4,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 94000.0,
+     "lease_end": "2027-04-05",
+     "proposed_rent": 102000.0
+    },
+    {
+     "unit": "404",
+     "floor": 4,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 95000.0,
+     "lease_end": "2027-08-19",
+     "proposed_rent": 106000.0
+    },
+    {
+     "unit": "405",
+     "floor": 4,
+     "index": 5,
+     "occupied": false
+    },
+    {
+     "unit": "406",
+     "floor": 4,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 101000.0,
+     "lease_end": "2026-11-29",
+     "proposed_rent": 101000.0
+    },
+    {
+     "unit": "501",
+     "floor": 5,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 79000.0,
+     "lease_end": "2027-08-18",
+     "proposed_rent": 88000.0
+    },
+    {
+     "unit": "502",
+     "floor": 5,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 83000.0,
+     "lease_end": "2027-10-04",
+     "proposed_rent": 90000.0
+    },
+    {
+     "unit": "503",
+     "floor": 5,
+     "index": 3,
+     "occupied": false
+    },
+    {
+     "unit": "504",
+     "floor": 5,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2026-11-26",
+     "proposed_rent": 70000.0
+    },
+    {
+     "unit": "505",
+     "floor": 5,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-03-02",
+     "proposed_rent": 76000.0
+    },
+    {
+     "unit": "506",
+     "floor": 5,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 111000.0,
+     "lease_end": "2026-12-07",
+     "proposed_rent": 117000.0
+    },
+    {
+     "unit": "601",
+     "floor": 6,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 93000.0,
+     "lease_end": "2027-01-05",
+     "proposed_rent": 104000.0
+    },
+    {
+     "unit": "602",
+     "floor": 6,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 77000.0,
+     "lease_end": "2027-05-27",
+     "proposed_rent": 83000.0
+    },
+    {
+     "unit": "603",
+     "floor": 6,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 83000.0,
+     "lease_end": "2027-02-22",
+     "proposed_rent": 87000.0
+    },
+    {
+     "unit": "604",
+     "floor": 6,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "605",
+     "floor": 6,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 61000.0,
+     "lease_end": "2027-08-24",
+     "proposed_rent": 64000.0
+    },
+    {
+     "unit": "606",
+     "floor": 6,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 61000.0,
+     "lease_end": "2027-05-29",
+     "proposed_rent": 73000.0
+    },
+    {
+     "unit": "701",
+     "floor": 7,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 94000.0,
+     "lease_end": "2026-12-30",
+     "proposed_rent": 113000.0
+    },
+    {
+     "unit": "702",
+     "floor": 7,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 99000.0,
+     "lease_end": "2027-11-09",
+     "proposed_rent": 99000.0
+    },
+    {
+     "unit": "703",
+     "floor": 7,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 111000.0,
+     "lease_end": "2027-10-10",
+     "proposed_rent": 133000.0
+    },
+    {
+     "unit": "704",
+     "floor": 7,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 84000.0,
+     "lease_end": "2026-12-19",
+     "proposed_rent": 94000.0
+    },
+    {
+     "unit": "705",
+     "floor": 7,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 64000.0,
+     "lease_end": "2026-11-30",
+     "proposed_rent": 67000.0
+    },
+    {
+     "unit": "706",
+     "floor": 7,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2027-08-30",
+     "proposed_rent": 67000.0
+    },
+    {
+     "unit": "801",
+     "floor": 8,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "802",
+     "floor": 8,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 116000.0,
+     "lease_end": "2027-09-06",
+     "proposed_rent": 116000.0
+    },
+    {
+     "unit": "803",
+     "floor": 8,
+     "index": 3,
+     "occupied": false
+    },
+    {
+     "unit": "804",
+     "floor": 8,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 97000.0,
+     "lease_end": "2027-04-22",
+     "proposed_rent": 116000.0
+    },
+    {
+     "unit": "805",
+     "floor": 8,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-07-03",
+     "proposed_rent": 76000.0
+    },
+    {
+     "unit": "806",
+     "floor": 8,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 79000.0,
+     "lease_end": "2027-01-08",
+     "proposed_rent": 79000.0
+    },
+    {
+     "unit": "901",
+     "floor": 9,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 104000.0,
+     "lease_end": "2027-06-29",
+     "proposed_rent": 109000.0
+    },
+    {
+     "unit": "902",
+     "floor": 9,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 72000.0,
+     "lease_end": "2027-07-24",
+     "proposed_rent": 78000.0
+    },
+    {
+     "unit": "903",
+     "floor": 9,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 92000.0,
+     "lease_end": "2026-11-09",
+     "proposed_rent": 110000.0
+    },
+    {
+     "unit": "904",
+     "floor": 9,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 98000.0,
+     "lease_end": "2026-12-12",
+     "proposed_rent": 106000.0
+    },
+    {
+     "unit": "905",
+     "floor": 9,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 113000.0,
+     "lease_end": "2027-04-27",
+     "proposed_rent": 119000.0
+    },
+    {
+     "unit": "906",
+     "floor": 9,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 106000.0,
+     "lease_end": "2027-04-13",
+     "proposed_rent": 111000.0
+    },
+    {
+     "unit": "1001",
+     "floor": 10,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 106000.0,
+     "lease_end": "2027-02-03",
+     "proposed_rent": 111000.0
+    },
+    {
+     "unit": "1002",
+     "floor": 10,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 104000.0,
+     "lease_end": "2027-02-20",
+     "proposed_rent": 109000.0
+    },
+    {
+     "unit": "1003",
+     "floor": 10,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 81000.0,
+     "lease_end": "2026-11-10",
+     "proposed_rent": 81000.0
+    },
+    {
+     "unit": "1004",
+     "floor": 10,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 88000.0,
+     "lease_end": "2027-02-03",
+     "proposed_rent": 106000.0
+    },
+    {
+     "unit": "1005",
+     "floor": 10,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 87000.0,
+     "lease_end": "2027-11-01",
+     "proposed_rent": 94000.0
+    },
+    {
+     "unit": "1006",
+     "floor": 10,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 82000.0,
+     "lease_end": "2027-02-16",
+     "proposed_rent": 82000.0
+    },
+    {
+     "unit": "1101",
+     "floor": 11,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 72000.0,
+     "lease_end": "2027-02-08",
+     "proposed_rent": 81000.0
+    },
+    {
+     "unit": "1102",
+     "floor": 11,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 113000.0,
+     "lease_end": "2026-10-27",
+     "proposed_rent": 127000.0
+    },
+    {
+     "unit": "1103",
+     "floor": 11,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 81000.0,
+     "lease_end": "2027-09-21",
+     "proposed_rent": 81000.0
+    },
+    {
+     "unit": "1104",
+     "floor": 11,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2027-05-13",
+     "proposed_rent": 70000.0
+    },
+    {
+     "unit": "1105",
+     "floor": 11,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 71000.0,
+     "lease_end": "2027-09-17",
+     "proposed_rent": 77000.0
+    },
+    {
+     "unit": "1106",
+     "floor": 11,
+     "index": 6,
+     "occupied": false
+    },
+    {
+     "unit": "1201",
+     "floor": 12,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 88000.0,
+     "lease_end": "2027-11-11",
+     "proposed_rent": 88000.0
+    },
+    {
+     "unit": "1202",
+     "floor": 12,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 70000.0,
+     "lease_end": "2026-12-31",
+     "proposed_rent": 70000.0
+    },
+    {
+     "unit": "1203",
+     "floor": 12,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 113000.0,
+     "lease_end": "2027-09-27",
+     "proposed_rent": 119000.0
+    },
+    {
+     "unit": "1204",
+     "floor": 12,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 95000.0,
+     "lease_end": "2027-06-26",
+     "proposed_rent": 103000.0
+    },
+    {
+     "unit": "1205",
+     "floor": 12,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 92000.0,
+     "lease_end": "2026-11-06",
+     "proposed_rent": 92000.0
+    },
+    {
+     "unit": "1206",
+     "floor": 12,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 103000.0,
+     "lease_end": "2026-12-18",
+     "proposed_rent": 124000.0
+    }
+   ]
+  },
+  {
+   "id": "creek-view",
+   "name": "Creek View Residences",
+   "area": "Dubai Creek Harbour",
+   "floors": 9,
+   "units_per_floor": 5,
+   "avg_rent": 125000,
+   "units": [
+    {
+     "unit": "101",
+     "floor": 1,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 78000.0,
+     "lease_end": "2027-02-03",
+     "proposed_rent": 82000.0
+    },
+    {
+     "unit": "102",
+     "floor": 1,
+     "index": 2,
+     "occupied": false
+    },
+    {
+     "unit": "103",
+     "floor": 1,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 119000.0,
+     "lease_end": "2027-04-11",
+     "proposed_rent": 129000.0
+    },
+    {
+     "unit": "104",
+     "floor": 1,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 124000.0,
+     "lease_end": "2026-11-27",
+     "proposed_rent": 134000.0
+    },
+    {
+     "unit": "105",
+     "floor": 1,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 113000.0,
+     "lease_end": "2027-07-18",
+     "proposed_rent": 127000.0
+    },
+    {
+     "unit": "201",
+     "floor": 2,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 127000.0,
+     "lease_end": "2027-01-01",
+     "proposed_rent": 152000.0
+    },
+    {
+     "unit": "202",
+     "floor": 2,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 103000.0,
+     "lease_end": "2027-06-09",
+     "proposed_rent": 108000.0
+    },
+    {
+     "unit": "203",
+     "floor": 2,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 120000.0,
+     "lease_end": "2027-01-11",
+     "proposed_rent": 126000.0
+    },
+    {
+     "unit": "204",
+     "floor": 2,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 110000.0,
+     "lease_end": "2026-12-27",
+     "proposed_rent": 132000.0
+    },
+    {
+     "unit": "205",
+     "floor": 2,
+     "index": 5,
+     "occupied": false
+    },
+    {
+     "unit": "301",
+     "floor": 3,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 101000.0,
+     "lease_end": "2026-12-20",
+     "proposed_rent": 121000.0
+    },
+    {
+     "unit": "302",
+     "floor": 3,
+     "index": 2,
+     "occupied": false
+    },
+    {
+     "unit": "303",
+     "floor": 3,
+     "index": 3,
+     "occupied": false
+    },
+    {
+     "unit": "304",
+     "floor": 3,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 71000.0,
+     "lease_end": "2026-11-28",
+     "proposed_rent": 80000.0
+    },
+    {
+     "unit": "305",
+     "floor": 3,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 133000.0,
+     "lease_end": "2027-09-02",
+     "proposed_rent": 160000.0
+    },
+    {
+     "unit": "401",
+     "floor": 4,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 87000.0,
+     "lease_end": "2027-07-14",
+     "proposed_rent": 104000.0
+    },
+    {
+     "unit": "402",
+     "floor": 4,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 102000.0,
+     "lease_end": "2027-03-02",
+     "proposed_rent": 122000.0
+    },
+    {
+     "unit": "403",
+     "floor": 4,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 131000.0,
+     "lease_end": "2027-03-08",
+     "proposed_rent": 157000.0
+    },
+    {
+     "unit": "404",
+     "floor": 4,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 82000.0,
+     "lease_end": "2027-06-13",
+     "proposed_rent": 86000.0
+    },
+    {
+     "unit": "405",
+     "floor": 4,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 95000.0,
+     "lease_end": "2027-04-06",
+     "proposed_rent": 95000.0
+    },
+    {
+     "unit": "501",
+     "floor": 5,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 97000.0,
+     "lease_end": "2027-02-12",
+     "proposed_rent": 105000.0
+    },
+    {
+     "unit": "502",
+     "floor": 5,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 128000.0,
+     "lease_end": "2027-01-14",
+     "proposed_rent": 138000.0
+    },
+    {
+     "unit": "503",
+     "floor": 5,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 127000.0,
+     "lease_end": "2027-06-23",
+     "proposed_rent": 133000.0
+    },
+    {
+     "unit": "504",
+     "floor": 5,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 75000.0,
+     "lease_end": "2027-07-03",
+     "proposed_rent": 79000.0
+    },
+    {
+     "unit": "505",
+     "floor": 5,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 124000.0,
+     "lease_end": "2027-01-17",
+     "proposed_rent": 139000.0
+    },
+    {
+     "unit": "601",
+     "floor": 6,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 96000.0,
+     "lease_end": "2027-05-30",
+     "proposed_rent": 101000.0
+    },
+    {
+     "unit": "602",
+     "floor": 6,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 75000.0,
+     "lease_end": "2027-05-02",
+     "proposed_rent": 75000.0
+    },
+    {
+     "unit": "603",
+     "floor": 6,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 99000.0,
+     "lease_end": "2027-10-22",
+     "proposed_rent": 99000.0
+    },
+    {
+     "unit": "604",
+     "floor": 6,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 103000.0,
+     "lease_end": "2027-03-27",
+     "proposed_rent": 124000.0
+    },
+    {
+     "unit": "605",
+     "floor": 6,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 76000.0,
+     "lease_end": "2027-02-21",
+     "proposed_rent": 76000.0
+    },
+    {
+     "unit": "701",
+     "floor": 7,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "702",
+     "floor": 7,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 81000.0,
+     "lease_end": "2027-01-01",
+     "proposed_rent": 91000.0
+    },
+    {
+     "unit": "703",
+     "floor": 7,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 114000.0,
+     "lease_end": "2027-03-08",
+     "proposed_rent": 128000.0
+    },
+    {
+     "unit": "704",
+     "floor": 7,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 130000.0,
+     "lease_end": "2027-08-15",
+     "proposed_rent": 146000.0
+    },
+    {
+     "unit": "705",
+     "floor": 7,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 75000.0,
+     "lease_end": "2026-11-25",
+     "proposed_rent": 79000.0
+    },
+    {
+     "unit": "801",
+     "floor": 8,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 74000.0,
+     "lease_end": "2026-11-04",
+     "proposed_rent": 74000.0
+    },
+    {
+     "unit": "802",
+     "floor": 8,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 74000.0,
+     "lease_end": "2027-02-17",
+     "proposed_rent": 74000.0
+    },
+    {
+     "unit": "803",
+     "floor": 8,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 77000.0,
+     "lease_end": "2026-11-01",
+     "proposed_rent": 83000.0
+    },
+    {
+     "unit": "804",
+     "floor": 8,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 96000.0,
+     "lease_end": "2027-03-13",
+     "proposed_rent": 115000.0
+    },
+    {
+     "unit": "805",
+     "floor": 8,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 104000.0,
+     "lease_end": "2027-02-26",
+     "proposed_rent": 104000.0
+    },
+    {
+     "unit": "901",
+     "floor": 9,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 86000.0,
+     "lease_end": "2027-01-27",
+     "proposed_rent": 90000.0
+    },
+    {
+     "unit": "902",
+     "floor": 9,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 110000.0,
+     "lease_end": "2027-07-25",
+     "proposed_rent": 116000.0
+    },
+    {
+     "unit": "903",
+     "floor": 9,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 102000.0,
+     "lease_end": "2027-01-26",
+     "proposed_rent": 110000.0
+    },
+    {
+     "unit": "904",
+     "floor": 9,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 70000.0,
+     "lease_end": "2027-03-04",
+     "proposed_rent": 70000.0
+    },
+    {
+     "unit": "905",
+     "floor": 9,
+     "index": 5,
+     "occupied": false
+    }
+   ]
+  },
+  {
+   "id": "jvc-garden",
+   "name": "JVC Garden Heights",
+   "area": "Jumeirah Village Circle",
+   "floors": 7,
+   "units_per_floor": 8,
+   "avg_rent": 72000,
+   "units": [
+    {
+     "unit": "101",
+     "floor": 1,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 47000.0,
+     "lease_end": "2027-06-27",
+     "proposed_rent": 49000.0
+    },
+    {
+     "unit": "102",
+     "floor": 1,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 44000.0,
+     "lease_end": "2027-09-24",
+     "proposed_rent": 49000.0
+    },
+    {
+     "unit": "103",
+     "floor": 1,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 60000.0,
+     "lease_end": "2027-05-16",
+     "proposed_rent": 72000.0
+    },
+    {
+     "unit": "104",
+     "floor": 1,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 48000.0,
+     "lease_end": "2027-02-21",
+     "proposed_rent": 52000.0
+    },
+    {
+     "unit": "105",
+     "floor": 1,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 73000.0,
+     "lease_end": "2027-11-04",
+     "proposed_rent": 77000.0
+    },
+    {
+     "unit": "106",
+     "floor": 1,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 53000.0,
+     "lease_end": "2026-11-23",
+     "proposed_rent": 56000.0
+    },
+    {
+     "unit": "107",
+     "floor": 1,
+     "index": 7,
+     "occupied": false
+    },
+    {
+     "unit": "108",
+     "floor": 1,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 56000.0,
+     "lease_end": "2026-11-24",
+     "proposed_rent": 56000.0
+    },
+    {
+     "unit": "201",
+     "floor": 2,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 54000.0,
+     "lease_end": "2027-07-13",
+     "proposed_rent": 58000.0
+    },
+    {
+     "unit": "202",
+     "floor": 2,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 66000.0,
+     "lease_end": "2026-11-19",
+     "proposed_rent": 74000.0
+    },
+    {
+     "unit": "203",
+     "floor": 2,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 50000.0,
+     "lease_end": "2026-10-28",
+     "proposed_rent": 54000.0
+    },
+    {
+     "unit": "204",
+     "floor": 2,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 52000.0,
+     "lease_end": "2027-08-03",
+     "proposed_rent": 56000.0
+    },
+    {
+     "unit": "205",
+     "floor": 2,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 76000.0,
+     "lease_end": "2027-04-03",
+     "proposed_rent": 80000.0
+    },
+    {
+     "unit": "206",
+     "floor": 2,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 40000.0,
+     "lease_end": "2027-05-10",
+     "proposed_rent": 40000.0
+    },
+    {
+     "unit": "207",
+     "floor": 2,
+     "index": 7,
+     "occupied": true,
+     "annual_rent": 59000.0,
+     "lease_end": "2027-02-06",
+     "proposed_rent": 62000.0
+    },
+    {
+     "unit": "208",
+     "floor": 2,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 40000.0,
+     "lease_end": "2027-03-11",
+     "proposed_rent": 40000.0
+    },
+    {
+     "unit": "301",
+     "floor": 3,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 62000.0,
+     "lease_end": "2027-05-16",
+     "proposed_rent": 62000.0
+    },
+    {
+     "unit": "302",
+     "floor": 3,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 64000.0,
+     "lease_end": "2026-12-09",
+     "proposed_rent": 77000.0
+    },
+    {
+     "unit": "303",
+     "floor": 3,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 72000.0,
+     "lease_end": "2027-01-14",
+     "proposed_rent": 86000.0
+    },
+    {
+     "unit": "304",
+     "floor": 3,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 52000.0,
+     "lease_end": "2027-07-07",
+     "proposed_rent": 55000.0
+    },
+    {
+     "unit": "305",
+     "floor": 3,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 63000.0,
+     "lease_end": "2027-01-09",
+     "proposed_rent": 63000.0
+    },
+    {
+     "unit": "306",
+     "floor": 3,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2027-07-16",
+     "proposed_rent": 75000.0
+    },
+    {
+     "unit": "307",
+     "floor": 3,
+     "index": 7,
+     "occupied": true,
+     "annual_rent": 71000.0,
+     "lease_end": "2027-01-06",
+     "proposed_rent": 85000.0
+    },
+    {
+     "unit": "308",
+     "floor": 3,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 61000.0,
+     "lease_end": "2026-11-04",
+     "proposed_rent": 73000.0
+    },
+    {
+     "unit": "401",
+     "floor": 4,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2027-10-16",
+     "proposed_rent": 70000.0
+    },
+    {
+     "unit": "402",
+     "floor": 4,
+     "index": 2,
+     "occupied": false
+    },
+    {
+     "unit": "403",
+     "floor": 4,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 76000.0,
+     "lease_end": "2027-05-07",
+     "proposed_rent": 85000.0
+    },
+    {
+     "unit": "404",
+     "floor": 4,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 64000.0,
+     "lease_end": "2027-09-12",
+     "proposed_rent": 77000.0
+    },
+    {
+     "unit": "405",
+     "floor": 4,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 58000.0,
+     "lease_end": "2026-10-28",
+     "proposed_rent": 65000.0
+    },
+    {
+     "unit": "406",
+     "floor": 4,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-07-11",
+     "proposed_rent": 82000.0
+    },
+    {
+     "unit": "407",
+     "floor": 4,
+     "index": 7,
+     "occupied": false
+    },
+    {
+     "unit": "408",
+     "floor": 4,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 58000.0,
+     "lease_end": "2026-12-04",
+     "proposed_rent": 63000.0
+    },
+    {
+     "unit": "501",
+     "floor": 5,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-02-22",
+     "proposed_rent": 76000.0
+    },
+    {
+     "unit": "502",
+     "floor": 5,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 54000.0,
+     "lease_end": "2027-06-29",
+     "proposed_rent": 58000.0
+    },
+    {
+     "unit": "503",
+     "floor": 5,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 63000.0,
+     "lease_end": "2027-09-21",
+     "proposed_rent": 66000.0
+    },
+    {
+     "unit": "504",
+     "floor": 5,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "505",
+     "floor": 5,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 68000.0,
+     "lease_end": "2027-03-31",
+     "proposed_rent": 82000.0
+    },
+    {
+     "unit": "506",
+     "floor": 5,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 40000.0,
+     "lease_end": "2026-11-27",
+     "proposed_rent": 45000.0
+    },
+    {
+     "unit": "507",
+     "floor": 5,
+     "index": 7,
+     "occupied": true,
+     "annual_rent": 65000.0,
+     "lease_end": "2027-10-16",
+     "proposed_rent": 68000.0
+    },
+    {
+     "unit": "508",
+     "floor": 5,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 51000.0,
+     "lease_end": "2027-07-18",
+     "proposed_rent": 55000.0
+    },
+    {
+     "unit": "601",
+     "floor": 6,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 57000.0,
+     "lease_end": "2026-12-26",
+     "proposed_rent": 68000.0
+    },
+    {
+     "unit": "602",
+     "floor": 6,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 77000.0,
+     "lease_end": "2027-06-26",
+     "proposed_rent": 77000.0
+    },
+    {
+     "unit": "603",
+     "floor": 6,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 43000.0,
+     "lease_end": "2027-07-13",
+     "proposed_rent": 48000.0
+    },
+    {
+     "unit": "604",
+     "floor": 6,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 54000.0,
+     "lease_end": "2027-02-11",
+     "proposed_rent": 54000.0
+    },
+    {
+     "unit": "605",
+     "floor": 6,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 45000.0,
+     "lease_end": "2027-07-22",
+     "proposed_rent": 49000.0
+    },
+    {
+     "unit": "606",
+     "floor": 6,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 45000.0,
+     "lease_end": "2027-09-15",
+     "proposed_rent": 54000.0
+    },
+    {
+     "unit": "607",
+     "floor": 6,
+     "index": 7,
+     "occupied": true,
+     "annual_rent": 44000.0,
+     "lease_end": "2027-05-01",
+     "proposed_rent": 46000.0
+    },
+    {
+     "unit": "608",
+     "floor": 6,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 73000.0,
+     "lease_end": "2027-05-16",
+     "proposed_rent": 73000.0
+    },
+    {
+     "unit": "701",
+     "floor": 7,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 76000.0,
+     "lease_end": "2027-10-10",
+     "proposed_rent": 85000.0
+    },
+    {
+     "unit": "702",
+     "floor": 7,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 67000.0,
+     "lease_end": "2027-05-28",
+     "proposed_rent": 72000.0
+    },
+    {
+     "unit": "703",
+     "floor": 7,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 44000.0,
+     "lease_end": "2027-04-14",
+     "proposed_rent": 44000.0
+    },
+    {
+     "unit": "704",
+     "floor": 7,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 53000.0,
+     "lease_end": "2027-05-18",
+     "proposed_rent": 53000.0
+    },
+    {
+     "unit": "705",
+     "floor": 7,
+     "index": 5,
+     "occupied": true,
+     "annual_rent": 47000.0,
+     "lease_end": "2026-11-02",
+     "proposed_rent": 51000.0
+    },
+    {
+     "unit": "706",
+     "floor": 7,
+     "index": 6,
+     "occupied": true,
+     "annual_rent": 42000.0,
+     "lease_end": "2027-05-14",
+     "proposed_rent": 50000.0
+    },
+    {
+     "unit": "707",
+     "floor": 7,
+     "index": 7,
+     "occupied": false
+    },
+    {
+     "unit": "708",
+     "floor": 7,
+     "index": 8,
+     "occupied": true,
+     "annual_rent": 72000.0,
+     "lease_end": "2027-03-19",
+     "proposed_rent": 72000.0
+    }
+   ]
+  },
+  {
+   "id": "downtown-one",
+   "name": "Downtown One",
+   "area": "Downtown Dubai",
+   "floors": 15,
+   "units_per_floor": 4,
+   "avg_rent": 160000,
+   "units": [
+    {
+     "unit": "101",
+     "floor": 1,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "102",
+     "floor": 1,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 101000.0,
+     "lease_end": "2027-03-12",
+     "proposed_rent": 113000.0
+    },
+    {
+     "unit": "103",
+     "floor": 1,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 104000.0,
+     "lease_end": "2027-05-06",
+     "proposed_rent": 116000.0
+    },
+    {
+     "unit": "104",
+     "floor": 1,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 157000.0,
+     "lease_end": "2027-09-15",
+     "proposed_rent": 176000.0
+    },
+    {
+     "unit": "201",
+     "floor": 2,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 168000.0,
+     "lease_end": "2027-08-04",
+     "proposed_rent": 176000.0
+    },
+    {
+     "unit": "202",
+     "floor": 2,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 92000.0,
+     "lease_end": "2027-11-05",
+     "proposed_rent": 103000.0
+    },
+    {
+     "unit": "203",
+     "floor": 2,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 152000.0,
+     "lease_end": "2027-09-21",
+     "proposed_rent": 164000.0
+    },
+    {
+     "unit": "204",
+     "floor": 2,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 165000.0,
+     "lease_end": "2027-08-04",
+     "proposed_rent": 173000.0
+    },
+    {
+     "unit": "301",
+     "floor": 3,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 123000.0,
+     "lease_end": "2027-03-20",
+     "proposed_rent": 133000.0
+    },
+    {
+     "unit": "302",
+     "floor": 3,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 151000.0,
+     "lease_end": "2027-09-26",
+     "proposed_rent": 163000.0
+    },
+    {
+     "unit": "303",
+     "floor": 3,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 108000.0,
+     "lease_end": "2027-07-01",
+     "proposed_rent": 130000.0
+    },
+    {
+     "unit": "304",
+     "floor": 3,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 98000.0,
+     "lease_end": "2027-09-21",
+     "proposed_rent": 103000.0
+    },
+    {
+     "unit": "401",
+     "floor": 4,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "402",
+     "floor": 4,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 135000.0,
+     "lease_end": "2027-06-15",
+     "proposed_rent": 146000.0
+    },
+    {
+     "unit": "403",
+     "floor": 4,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 126000.0,
+     "lease_end": "2027-01-06",
+     "proposed_rent": 151000.0
+    },
+    {
+     "unit": "404",
+     "floor": 4,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 96000.0,
+     "lease_end": "2027-04-20",
+     "proposed_rent": 115000.0
+    },
+    {
+     "unit": "501",
+     "floor": 5,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "502",
+     "floor": 5,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 136000.0,
+     "lease_end": "2026-11-06",
+     "proposed_rent": 152000.0
+    },
+    {
+     "unit": "503",
+     "floor": 5,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 151000.0,
+     "lease_end": "2027-02-11",
+     "proposed_rent": 169000.0
+    },
+    {
+     "unit": "504",
+     "floor": 5,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 152000.0,
+     "lease_end": "2027-07-09",
+     "proposed_rent": 164000.0
+    },
+    {
+     "unit": "601",
+     "floor": 6,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 119000.0,
+     "lease_end": "2027-10-13",
+     "proposed_rent": 143000.0
+    },
+    {
+     "unit": "602",
+     "floor": 6,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 155000.0,
+     "lease_end": "2027-02-14",
+     "proposed_rent": 155000.0
+    },
+    {
+     "unit": "603",
+     "floor": 6,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 109000.0,
+     "lease_end": "2027-05-19",
+     "proposed_rent": 122000.0
+    },
+    {
+     "unit": "604",
+     "floor": 6,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 114000.0,
+     "lease_end": "2026-11-07",
+     "proposed_rent": 120000.0
+    },
+    {
+     "unit": "701",
+     "floor": 7,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "702",
+     "floor": 7,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 128000.0,
+     "lease_end": "2027-08-23",
+     "proposed_rent": 143000.0
+    },
+    {
+     "unit": "703",
+     "floor": 7,
+     "index": 3,
+     "occupied": false
+    },
+    {
+     "unit": "704",
+     "floor": 7,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 158000.0,
+     "lease_end": "2027-06-23",
+     "proposed_rent": 177000.0
+    },
+    {
+     "unit": "801",
+     "floor": 8,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 97000.0,
+     "lease_end": "2027-01-14",
+     "proposed_rent": 102000.0
+    },
+    {
+     "unit": "802",
+     "floor": 8,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 146000.0,
+     "lease_end": "2027-10-31",
+     "proposed_rent": 164000.0
+    },
+    {
+     "unit": "803",
+     "floor": 8,
+     "index": 3,
+     "occupied": false
+    },
+    {
+     "unit": "804",
+     "floor": 8,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "901",
+     "floor": 9,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 91000.0,
+     "lease_end": "2027-10-28",
+     "proposed_rent": 98000.0
+    },
+    {
+     "unit": "902",
+     "floor": 9,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 141000.0,
+     "lease_end": "2027-07-24",
+     "proposed_rent": 158000.0
+    },
+    {
+     "unit": "903",
+     "floor": 9,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 98000.0,
+     "lease_end": "2026-12-02",
+     "proposed_rent": 106000.0
+    },
+    {
+     "unit": "904",
+     "floor": 9,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 137000.0,
+     "lease_end": "2027-05-13",
+     "proposed_rent": 148000.0
+    },
+    {
+     "unit": "1001",
+     "floor": 10,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 139000.0,
+     "lease_end": "2026-11-01",
+     "proposed_rent": 167000.0
+    },
+    {
+     "unit": "1002",
+     "floor": 10,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 127000.0,
+     "lease_end": "2027-04-06",
+     "proposed_rent": 133000.0
+    },
+    {
+     "unit": "1003",
+     "floor": 10,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 108000.0,
+     "lease_end": "2027-03-02",
+     "proposed_rent": 108000.0
+    },
+    {
+     "unit": "1004",
+     "floor": 10,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 148000.0,
+     "lease_end": "2027-04-02",
+     "proposed_rent": 148000.0
+    },
+    {
+     "unit": "1101",
+     "floor": 11,
+     "index": 1,
+     "occupied": false
+    },
+    {
+     "unit": "1102",
+     "floor": 11,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 124000.0,
+     "lease_end": "2027-03-07",
+     "proposed_rent": 130000.0
+    },
+    {
+     "unit": "1103",
+     "floor": 11,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 166000.0,
+     "lease_end": "2027-02-20",
+     "proposed_rent": 186000.0
+    },
+    {
+     "unit": "1104",
+     "floor": 11,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "1201",
+     "floor": 12,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 146000.0,
+     "lease_end": "2027-02-05",
+     "proposed_rent": 146000.0
+    },
+    {
+     "unit": "1202",
+     "floor": 12,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 151000.0,
+     "lease_end": "2027-07-12",
+     "proposed_rent": 151000.0
+    },
+    {
+     "unit": "1203",
+     "floor": 12,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 170000.0,
+     "lease_end": "2027-04-04",
+     "proposed_rent": 178000.0
+    },
+    {
+     "unit": "1204",
+     "floor": 12,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 107000.0,
+     "lease_end": "2027-03-27",
+     "proposed_rent": 107000.0
+    },
+    {
+     "unit": "1301",
+     "floor": 13,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 130000.0,
+     "lease_end": "2027-01-30",
+     "proposed_rent": 136000.0
+    },
+    {
+     "unit": "1302",
+     "floor": 13,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 165000.0,
+     "lease_end": "2026-11-24",
+     "proposed_rent": 198000.0
+    },
+    {
+     "unit": "1303",
+     "floor": 13,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 121000.0,
+     "lease_end": "2027-02-13",
+     "proposed_rent": 121000.0
+    },
+    {
+     "unit": "1304",
+     "floor": 13,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 100000.0,
+     "lease_end": "2026-11-22",
+     "proposed_rent": 100000.0
+    },
+    {
+     "unit": "1401",
+     "floor": 14,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 126000.0,
+     "lease_end": "2027-10-26",
+     "proposed_rent": 136000.0
+    },
+    {
+     "unit": "1402",
+     "floor": 14,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 173000.0,
+     "lease_end": "2027-01-19",
+     "proposed_rent": 187000.0
+    },
+    {
+     "unit": "1403",
+     "floor": 14,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 143000.0,
+     "lease_end": "2027-07-22",
+     "proposed_rent": 160000.0
+    },
+    {
+     "unit": "1404",
+     "floor": 14,
+     "index": 4,
+     "occupied": false
+    },
+    {
+     "unit": "1501",
+     "floor": 15,
+     "index": 1,
+     "occupied": true,
+     "annual_rent": 120000.0,
+     "lease_end": "2027-04-14",
+     "proposed_rent": 134000.0
+    },
+    {
+     "unit": "1502",
+     "floor": 15,
+     "index": 2,
+     "occupied": true,
+     "annual_rent": 88000.0,
+     "lease_end": "2027-03-19",
+     "proposed_rent": 88000.0
+    },
+    {
+     "unit": "1503",
+     "floor": 15,
+     "index": 3,
+     "occupied": true,
+     "annual_rent": 169000.0,
+     "lease_end": "2026-12-29",
+     "proposed_rent": 203000.0
+    },
+    {
+     "unit": "1504",
+     "floor": 15,
+     "index": 4,
+     "occupied": true,
+     "annual_rent": 106000.0,
+     "lease_end": "2027-04-27",
+     "proposed_rent": 114000.0
+    }
+   ]
+  }
+ ]
+}
