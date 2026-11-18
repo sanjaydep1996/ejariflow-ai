@@ -15,7 +15,7 @@
   }
   * { box-sizing:border-box }
   html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font:14px/1.5 var(--ui); overflow:hidden }
-  #scene { position:fixed; inset:0; background:radial-gradient(120% 80% at 70% 0%, #1b2440 0%, #0b1120 45%, #05080f 100%) }
+  #scene { position:fixed; inset:0; background:radial-gradient(130% 90% at 50% 100%, #24141e 0%, #131728 28%, #090e1c 62%, #040710 100%) }
   #scene canvas { display:block }
   .glass { background:var(--glass); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 20px 50px rgba(0,0,0,.35) }
 
@@ -105,9 +105,15 @@
 <header class="glass">
   <div class="brand">
     <div class="mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1407" stroke-width="2.4" stroke-linecap="round"><path d="M4 21V9l5-4v16M9 21V3l6 4v14M15 21v-9l5 3v6M2 21h20"/></svg></div>
-    <div><h1>Ejari<b>Flow</b> AI</h1><small>Dubai tenancy compliance</small></div>
+    <div><h1>Ejari<b>Flow</b> AI</h1><small>Dubai Tenancy Compliance · Sheikh Zayed Road Digital Twin</small></div>
   </div>
   <span class="chip" id="asof">Sample portfolio</span>
+  <div class="seg" role="group" aria-label="Camera Views" id="camViews">
+    <button data-cam="szr" aria-pressed="true">🛣️ SZR Corridor</button>
+    <button data-cam="drive" aria-pressed="false">🚗 Highway Drive</button>
+    <button data-cam="downtown" aria-pressed="false">🏙️ Burj View</button>
+    <button data-cam="tour" aria-pressed="false">🎬 45s Tour</button>
+  </div>
   <div class="seg" role="group" aria-label="Colour units by">
     <button data-mode="expiry" aria-pressed="true">Lease expiry</button>
     <button data-mode="rera" aria-pressed="false">RERA compliance</button>
@@ -194,7 +200,16 @@ const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Typ
 const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /* ---------------- colour modes ---------------- */
-const PALETTE = { later: "#34d399", due_180: "#fbbf24", due_90: "#fb923c", expired: "#f43f5e", vacant: "#1e293b", compliant: "#38bdf8", over_cap: "#f43f5e", occupied: "#ffd59a" };
+const PALETTE = {
+  later: "#10b981",    // Emerald (> 6 months)
+  due_180: "#f59e0b",  // Warm amber (3–6 months)
+  due_90: "#f97316",   // Warm coral (< 90 days)
+  expired: "#ef4444",  // Coral red (Expired)
+  vacant: "#1e293b",   // Deep night slate (Vacant)
+  compliant: "#0ea5e9",// Sky blue (Within RERA cap)
+  over_cap: "#ef4444", // Coral red (Over RERA cap)
+  occupied: "#fde68a"  // Warm candlelight (Occupied)
+};
 const MODES = {
   expiry: { legend: [["later", "Lease > 6 months"], ["due_180", "Ends in 3–6 months"], ["due_90", "Ends in < 90 days"], ["expired", "Expired"], ["vacant", "Vacant"]],
             key: u => !u.occupied ? "vacant" : u.expiry },
@@ -208,119 +223,433 @@ let mode = "expiry";
 const host = $("scene");
 const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.0;
 host.appendChild(renderer.domElement);
 const scene = new THREE.Scene();
-scene.fog = new THREE.FogExp2(0x070b14, 0.0042);
-const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 2000);
-camera.position.set(150, 105, 190);
+scene.fog = new THREE.FogExp2(0x0a0f1d, 0.0028);
+
+const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 2500);
+camera.position.set(165, 95, 175);
 const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true; controls.dampingFactor = 0.06; controls.maxPolarAngle = Math.PI * 0.47; controls.minDistance = 40; controls.maxDistance = 420;
-controls.target.set(0, 30, 0); controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.35;
-controls.addEventListener("start", () => { controls.autoRotate = false; });
+controls.enableDamping = true; controls.dampingFactor = 0.06;
+controls.maxPolarAngle = Math.PI * 0.48; controls.minDistance = 35; controls.maxDistance = 600;
+controls.target.set(0, 25, -20);
+controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.25;
+controls.addEventListener("start", () => { controls.autoRotate = false; stopTour(); });
 
-scene.add(new THREE.HemisphereLight(0x8fb3ff, 0x0b0f18, 0.55));
-const moon = new THREE.DirectionalLight(0xbcd4ff, 0.9); moon.position.set(-120, 200, 80); scene.add(moon);
-const warm = new THREE.PointLight(0xffb15c, 2200, 260, 1.6); warm.position.set(0, 18, 60); scene.add(warm);
+// Atmospheric Dubai night lighting
+scene.add(new THREE.HemisphereLight(0x94b4ff, 0x18101a, 0.45));
+const moon = new THREE.DirectionalLight(0xbdd4ff, 0.65);
+moon.position.set(-140, 260, 90);
+scene.add(moon);
 
-// ground, roads and water
-const ground = new THREE.Mesh(new THREE.CircleGeometry(700, 64), new THREE.MeshStandardMaterial({ color: 0x0a0f1a, roughness: 0.95 }));
+// Warm city sky glow & streetlights
+const szrWarm1 = new THREE.PointLight(0xffb259, 220, 300, 1.8); szrWarm1.position.set(-100, 26, 0); scene.add(szrWarm1);
+const szrWarm2 = new THREE.PointLight(0xffb259, 220, 300, 1.8); szrWarm2.position.set(100, 26, 0); scene.add(szrWarm2);
+const dtownFill = new THREE.PointLight(0x60a5fa, 160, 320, 1.8); dtownFill.position.set(-160, 45, -120); scene.add(dtownFill);
+
+// Ground plain
+const ground = new THREE.Mesh(new THREE.CircleGeometry(900, 64), new THREE.MeshStandardMaterial({ color: 0x070b14, roughness: 0.95 }));
 ground.rotation.x = -Math.PI / 2; scene.add(ground);
-const water = new THREE.Mesh(new THREE.PlaneGeometry(520, 70), new THREE.MeshStandardMaterial({ color: 0x0b2236, metalness: 0.8, roughness: 0.18, emissive: 0x06131f }));
-water.rotation.x = -Math.PI / 2; water.position.set(0, 0.05, 95); scene.add(water);
-const roadMat = new THREE.MeshBasicMaterial({ color: 0x1b2433 });
-for (const [w, h, x, z] of [[520, 7, 0, 46], [520, 5, 0, -48], [6, 200, -105, 0], [6, 200, 105, 0], [6, 200, 0, 0]]) {
-  const r = new THREE.Mesh(new THREE.PlaneGeometry(w, h), roadMat); r.rotation.x = -Math.PI / 2; r.position.set(x, 0.04, z); scene.add(r);
+
+// Dubai Canal / Waterfront along back
+const water = new THREE.Mesh(new THREE.PlaneGeometry(850, 90), new THREE.MeshStandardMaterial({ color: 0x081e30, metalness: 0.85, roughness: 0.16, emissive: 0x040d18 }));
+water.rotation.x = -Math.PI / 2; water.position.set(0, 0.04, -145); scene.add(water);
+
+/* ---------------- Sheikh Zayed Road (E11 Highway) ---------------- */
+const HW_LEN = 800, HW_W = 54;
+const roadMat = new THREE.MeshStandardMaterial({ color: 0x121722, roughness: 0.4, metalness: 0.3 });
+const highway = new THREE.Mesh(new THREE.PlaneGeometry(HW_LEN, HW_W), roadMat);
+highway.rotation.x = -Math.PI / 2; highway.position.set(0, 0.05, 0); scene.add(highway);
+
+// Central Jersey Barrier Median
+const medianMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8 });
+const median = new THREE.Mesh(new THREE.BoxGeometry(HW_LEN, 0.7, 2.8), medianMat);
+median.position.set(0, 0.35, 0); scene.add(median);
+
+// Sidewalks & curbs along North and South edges
+for (const zSide of [-HW_W / 2 - 2, HW_W / 2 + 2]) {
+  const curb = new THREE.Mesh(new THREE.BoxGeometry(HW_LEN, 0.4, 4), medianMat);
+  curb.position.set(0, 0.2, zSide); scene.add(curb);
 }
-// street-light dots along the main road
-const lampGeo = new THREE.SphereGeometry(0.45, 8, 8), lampMat = new THREE.MeshBasicMaterial({ color: 0xffc27a });
-for (let x = -250; x <= 250; x += 9) for (const z of [42, 50]) { const l = new THREE.Mesh(lampGeo, lampMat); l.position.set(x, 1.2, z); scene.add(l); }
 
-// stars
-{ const g = new THREE.BufferGeometry(), n = 1400, p = new Float32Array(n * 3);
-  for (let i = 0; i < n; i++) { const t = Math.random() * Math.PI * 2, f = Math.random() * 0.45, r = 900;
-    p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = 60 + r * Math.sin(f); p[i*3+2] = r * Math.sin(t) * Math.cos(f); }
-  g.setAttribute("position", new THREE.BufferAttribute(p, 3));
-  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xc9d6ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: .7, fog: false }))); }
+// Dashed Lane Markings (Instanced)
+const laneGeo = new THREE.PlaneGeometry(4.5, 0.22);
+const laneMat = new THREE.MeshBasicMaterial({ color: 0xf1f5f9 });
+const laneYelMat = new THREE.MeshBasicMaterial({ color: 0xfbbf24 });
+const LANES_PER_SIDE = 5;
+const dashes = [];
+for (let s = -1; s <= 1; s += 2) {
+  for (let l = 1; l <= LANES_PER_SIDE; l++) {
+    const laneZ = s * (l * 4.2);
+    for (let x = -HW_LEN / 2 + 5; x <= HW_LEN / 2 - 5; x += 11) {
+      dashes.push({ x, y: 0.07, z: laneZ, mat: l === 1 ? laneYelMat : laneMat });
+    }
+  }
+}
+const whiteDashes = dashes.filter(d => d.mat === laneMat);
+const yellDashes = dashes.filter(d => d.mat === laneYelMat);
+function makeDashMesh(arr, mat) {
+  const mesh = new THREE.InstancedMesh(laneGeo, mat, arr.length);
+  const m = new THREE.Matrix4(), q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), -Math.PI / 2);
+  arr.forEach((d, i) => { m.compose(new THREE.Vector3(d.x, d.y, d.z), q, new THREE.Vector3(1, 1, 1)); mesh.setMatrixAt(i, m); });
+  return mesh;
+}
+scene.add(makeDashMesh(whiteDashes, laneMat));
+scene.add(makeDashMesh(yellDashes, laneYelMat));
 
-// distant skyline (context, not data)
-{ const geo = new THREE.BoxGeometry(1, 1, 1), mat = new THREE.MeshStandardMaterial({ color: 0x0d1424, emissive: 0x111a2e, roughness: .8 });
+// Highway Streetlight Poles along median & verges
+const poleGeo = new THREE.CylinderGeometry(0.18, 0.22, 11, 8);
+const poleMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.7, roughness: 0.3 });
+const lampHeadGeo = new THREE.SphereGeometry(0.5, 8, 8);
+const lampHeadMat = new THREE.MeshBasicMaterial({ color: 0xffde8a });
+for (let x = -HW_LEN / 2 + 20; x <= HW_LEN / 2 - 20; x += 32) {
+  // Center median double-arm lamp
+  const pole = new THREE.Mesh(poleGeo, poleMat); pole.position.set(x, 5.5, 0); scene.add(pole);
+  const arm = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.15, 0.2), poleMat); arm.position.set(x, 10.9, 0); scene.add(arm);
+  for (const sz of [-1.9, 1.9]) {
+    const lamp = new THREE.Mesh(lampHeadGeo, lampHeadMat); lamp.position.set(x, 10.8, sz); scene.add(lamp);
+  }
+}
+
+// Overhead Highway Gantries with authentic green Dubai RTA Exit Signs
+function makeHighwaySign(text, code, sub) {
+  const c = document.createElement("canvas"); c.width = 512; c.height = 140; const g = c.getContext("2d");
+  g.fillStyle = "#046a38"; g.beginPath(); g.roundRect(4, 4, 504, 132, 16); g.fill();
+  g.strokeStyle = "#ffffff"; g.lineWidth = 4; g.stroke();
+  g.fillStyle = "#fbbf24"; g.font = "bold 26px 'Space Grotesk', Arial"; g.fillText(code, 22, 42);
+  g.fillStyle = "#ffffff"; g.font = "bold 34px 'Inter', Arial"; g.fillText(text, 22, 85);
+  g.fillStyle = "#cbd5e1"; g.font = "22px 'Inter', Arial"; g.fillText(sub, 22, 118);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  return new THREE.MeshBasicMaterial({ map: tex });
+}
+const gantryMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.6, roughness: 0.3 });
+const signsData = [
+  { x: -160, code: "E11 · Sheikh Zayed Rd", text: "Downtown Dubai / Burj Khalifa", sub: "Business Bay · Financial Centre" },
+  { x: 20, code: "D71 · Financial Centre Rd", text: "DIFC / Dubai World Trade Centre", sub: "Zabeel · Dubai Canal" },
+  { x: 190, code: "E11 · Sheikh Zayed Rd", text: "Dubai Marina / JBR / JLT", sub: "Jumeirah Village · Mall of the Emirates" }
+];
+signsData.forEach(s => {
+  const g = new THREE.Group(); g.position.set(s.x, 0, 0);
+  const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 14, 8), gantryMat); leg1.position.set(0, 7, -HW_W / 2 - 1); g.add(leg1);
+  const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.45, 14, 8), gantryMat); leg2.position.set(0, 7, HW_W / 2 + 1); g.add(leg2);
+  const truss = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.4, HW_W + 4), gantryMat); truss.position.set(0, 13.5, 0); g.add(truss);
+  const sMat = makeHighwaySign(s.text, s.code, s.sub);
+  const sign1 = new THREE.Mesh(new THREE.PlaneGeometry(16, 4.4), sMat); sign1.position.set(0.9, 13.5, -9); sign1.rotation.y = Math.PI / 2; g.add(sign1);
+  const sign2 = new THREE.Mesh(new THREE.PlaneGeometry(16, 4.4), sMat); sign2.position.set(-0.9, 13.5, 9); sign2.rotation.y = -Math.PI / 2; g.add(sign2);
+  scene.add(g);
+});
+
+// Dynamic Highway Traffic Streams (Eastbound Headlights & Westbound Taillights)
+const CAR_COUNT = 130;
+const trafficCars = [];
+const headGeo = new THREE.BoxGeometry(1.4, 0.28, 0.8), tailGeo = new THREE.BoxGeometry(1.4, 0.28, 0.8);
+const headMat = new THREE.MeshBasicMaterial({ color: 0xfff3d0 });
+const tailMat = new THREE.MeshBasicMaterial({ color: 0xff2442 });
+for (let i = 0; i < CAR_COUNT; i++) {
+  const isEast = (i % 2 === 0);
+  const laneIndex = 1 + (i % 5);
+  const zPos = isEast ? (laneIndex * 4.2 - 1.5) : (-laneIndex * 4.2 + 1.5);
+  const mesh = new THREE.Mesh(headGeo, isEast ? headMat : tailMat);
+  const speed = (isEast ? 1 : -1) * (38 + Math.random() * 26);
+  const xPos = -HW_LEN / 2 + Math.random() * HW_LEN;
+  mesh.position.set(xPos, 0.45, zPos);
+  scene.add(mesh);
+  trafficCars.push({ mesh, speed, isEast });
+}
+
+/* ---------------- Elevated Dubai Metro Red Line & Station ---------------- */
+const METRO_Z = 34, METRO_Y = 11;
+const viaductMat = new THREE.MeshStandardMaterial({ color: 0x242d3d, roughness: 0.65, metalness: 0.4 });
+const viaductDeck = new THREE.Mesh(new THREE.BoxGeometry(HW_LEN, 1.6, 6.8), viaductMat);
+viaductDeck.position.set(0, METRO_Y, METRO_Z); scene.add(viaductDeck);
+const railMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.8, roughness: 0.2 });
+for (const rz of [-1.8, -0.6, 0.6, 1.8]) {
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(HW_LEN, 0.25, 0.22), railMat);
+  rail.position.set(0, METRO_Y + 0.95, METRO_Z + rz); scene.add(rail);
+}
+// Concrete Support Piers
+const pierGeo = new THREE.CylinderGeometry(1.1, 1.4, METRO_Y, 12);
+for (let px = -HW_LEN / 2 + 15; px <= HW_LEN / 2 - 15; px += 28) {
+  const pier = new THREE.Mesh(pierGeo, viaductMat); pier.position.set(px, METRO_Y / 2, METRO_Z); scene.add(pier);
+}
+
+// Dubai Metro Station (Iconic Golden Cocoon / Shell Design)
+const stationGroup = new THREE.Group(); stationGroup.position.set(-45, METRO_Y, METRO_Z);
+const shellMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.25, emissive: 0x997518, emissiveIntensity: 0.35 });
+const stnGlassMat = new THREE.MeshStandardMaterial({ color: 0x93c5fd, roughness: 0.15, metalness: 0.85, transparent: true, opacity: 0.65 });
+const shell = new THREE.Mesh(new THREE.CylinderGeometry(5.2, 5.8, 54, 16, 1, false, 0, Math.PI), shellMat);
+shell.rotation.z = Math.PI / 2; shell.position.y = 2.4; stationGroup.add(shell);
+const stnPlatform = new THREE.Mesh(new THREE.BoxGeometry(54, 2.2, 8.4), viaductMat);
+stnPlatform.position.y = 0.6; stationGroup.add(stnPlatform);
+// Interior warm platform lighting
+const stnGlow = new THREE.PointLight(0xffe6a3, 140, 45, 1.6); stnGlow.position.set(0, 3.2, 0); stationGroup.add(stnGlow);
+// Enclosed Pedestrian Skybridge Crossing SZR
+const skybridge = new THREE.Mesh(new THREE.CylinderGeometry(2.1, 2.1, 56, 12), shellMat);
+skybridge.rotation.x = Math.PI / 2; skybridge.position.set(0, 2.2, -31); stationGroup.add(skybridge);
+scene.add(stationGroup);
+
+// Animated 5-Car Dubai Metro Train
+const trainGroup = new THREE.Group();
+const trainCarMat = new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.8, roughness: 0.2 });
+const trainTurquoise = new THREE.MeshBasicMaterial({ color: 0x06b6d4 });
+const trainWindowMat = new THREE.MeshBasicMaterial({ color: 0xfef08a });
+const CAR_LEN = 11, CARS = 5;
+for (let c = 0; c < CARS; c++) {
+  const car = new THREE.Group(); car.position.x = (c - (CARS - 1) / 2) * (CAR_LEN + 0.35);
+  const body = new THREE.Mesh(new THREE.BoxGeometry(CAR_LEN, 2.4, 2.5), trainCarMat); body.position.y = 1.35; car.add(body);
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(CAR_LEN + 0.05, 0.45, 2.55), trainTurquoise); stripe.position.y = 1.25; car.add(stripe);
+  const wins = new THREE.Mesh(new THREE.BoxGeometry(CAR_LEN * 0.85, 0.6, 2.58), trainWindowMat); wins.position.y = 1.85; car.add(wins);
+  trainGroup.add(car);
+}
+// Train Front LED Headlights
+const trainHeadlight = new THREE.Mesh(new THREE.SphereGeometry(0.35), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+trainHeadlight.position.set(CARS * CAR_LEN / 2 + 0.2, 1.3, 0); trainGroup.add(trainHeadlight);
+trainGroup.position.set(120, METRO_Y + 0.8, METRO_Z - 1.2); scene.add(trainGroup);
+let trainSpeed = 34;
+
+/* ---------------- Dubai Date Palms (Procedural Landscaping) ---------------- */
+const trunkMat = new THREE.MeshStandardMaterial({ color: 0x3d2b1f, roughness: 0.9 });
+const frondMat = new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.6 });
+function makePalmTree(x, z) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.38, 5.8, 7), trunkMat); trunk.position.y = 2.9; trunk.rotation.z = (Math.random() - 0.5) * 0.08; g.add(trunk);
+  for (let a = 0; a < 8; a++) {
+    const frond = new THREE.Mesh(new THREE.ConeGeometry(0.85, 3.6, 4), frondMat);
+    frond.position.set(0, 5.6, 0); frond.rotation.set(0.65, a * Math.PI / 4, 0.15); g.add(frond);
+  }
+  return g;
+}
+// Place Palms along SZR median and promenade
+for (let px = -HW_LEN / 2 + 10; px <= HW_LEN / 2 - 10; px += 24) {
+  scene.add(makePalmTree(px, 0));
+  scene.add(makePalmTree(px + 6, -HW_W / 2 - 3));
+  scene.add(makePalmTree(px + 12, HW_W / 2 + 3));
+}
+
+/* ---------------- Iconic Dubai Skyline Landmarks (Horizon) ---------------- */
+// 1. BURJ KHALIFA (Downtown Backdrop at X=-170, Z=-280)
+const burj = new THREE.Group(); burj.position.set(-170, 0, -280);
+const burjMat = new THREE.MeshStandardMaterial({ color: 0x93b4d8, metalness: 0.88, roughness: 0.22, emissive: 0x152238 });
+const burjRingMat = new THREE.MeshBasicMaterial({ color: 0xdbeafe });
+const tiers = [[34, 62], [27, 56], [21, 52], [16, 46], [11, 40], [6.5, 34]];
+let curY = 0;
+tiers.forEach(([w, h]) => {
+  const tMesh = new THREE.Mesh(new THREE.CylinderGeometry(w * 0.78, w, h, 6), burjMat);
+  tMesh.position.y = curY + h / 2; burj.add(tMesh);
+  const ring = new THREE.Mesh(new THREE.CylinderGeometry(w * 0.8, w * 0.8, 0.5, 6), burjRingMat);
+  ring.position.y = curY + h; burj.add(ring);
+  curY += h;
+});
+// Burj Spire & Strobe
+const burjSpire = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 2.5, 68, 8), burjMat);
+burjSpire.position.y = curY + 34; burj.add(burjSpire);
+const burjStrobe = new THREE.Mesh(new THREE.SphereGeometry(1.5), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+burjStrobe.position.y = curY + 68; burj.add(burjStrobe); burj.userData.strobe = burjStrobe;
+scene.add(burj);
+
+// 2. EMIRATES TOWERS (Twin Angled Chisel Peaks at X=140, Z=-260)
+const etMat = new THREE.MeshStandardMaterial({ color: 0x7c94b8, metalness: 0.85, roughness: 0.25, emissive: 0x18243a });
+for (const [tx, th] of [[120, 160], [155, 140]]) {
+  const et = new THREE.Mesh(new THREE.ConeGeometry(14, th, 3), etMat);
+  et.position.set(tx, th / 2, -260); et.rotation.y = Math.PI / 6; scene.add(et);
+}
+
+// 3. DUBAI FRAME / MUSEUM OF THE FUTURE RING SILHOUETTE (X=-20, Z=-320)
+const frameMat = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.8, roughness: 0.3, emissive: 0x6e5318 });
+const frameTorus = new THREE.Mesh(new THREE.TorusGeometry(32, 4.2, 12, 32), frameMat);
+frameTorus.position.set(-20, 48, -320); frameTorus.rotation.y = 0.35; scene.add(frameTorus);
+
+// 4. Opposing Modern Dubai Skyscrapers (South Side of Sheikh Zayed Road at Z = +68)
+const oppGlass = new THREE.MeshStandardMaterial({ color: 0x0f1a2e, metalness: 0.85, roughness: 0.2, emissive: 0x08101e });
+const oppFrame = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.4 });
+const oppCrownMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.3, emissive: 0x0369a1, emissiveIntensity: 0.35 });
+for (let i = 0; i < 9; i++) {
+  const ox = -240 + i * 58;
+  const oh = 45 + Math.sin(i * 1.8) * 35 + (i % 2 ? 40 : 15);
+  const ow = 22 + (i % 3) * 5;
+  const bldg = new THREE.Mesh(new THREE.BoxGeometry(ow, oh, 18), oppGlass);
+  bldg.position.set(ox, oh / 2, 68); scene.add(bldg);
+  const crown = new THREE.Mesh(new THREE.BoxGeometry(ow + 0.4, 2.5, 18.4), oppCrownMat);
+  crown.position.set(ox, oh + 1.25, 68); scene.add(crown);
+}
+
+// 5. Background City Grid (160 distant towers creating dense Dubai canyon depth)
+{
+  const geo = new THREE.BoxGeometry(1, 1, 1), mat = new THREE.MeshStandardMaterial({ color: 0x0d1424, emissive: 0x0d1526, roughness: 0.8 });
   const n = 160, mesh = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(); let k = 0;
   for (let i = 0; i < n; i++) {
-    const a = (i / n) * Math.PI * 2 + Math.random() * .03, d = 300 + Math.random() * 160, h = 15 + Math.pow(Math.random(), 2) * 110, w = 8 + Math.random() * 14;
+    const a = (i / n) * Math.PI * 2 + Math.random() * 0.04, d = 310 + Math.random() * 160, h = 18 + Math.pow(Math.random(), 2) * 125, w = 9 + Math.random() * 16;
     m.compose(new THREE.Vector3(Math.cos(a) * d, h / 2, Math.sin(a) * d), new THREE.Quaternion(), new THREE.Vector3(w, h, w)); mesh.setMatrixAt(k++, m);
   }
   scene.add(mesh);
-  // a landmark spire on the horizon
-  const spire = new THREE.Group(), sm = new THREE.MeshStandardMaterial({ color: 0x9fb4d8, metalness: .8, roughness: .3, emissive: 0x1e2a44 });
-  [[16, 120], [12, 90], [8, 70], [5, 60], [2.4, 70]].reduce((y, [w, h]) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(w * .7, w, h, 6), sm); b.position.y = y + h / 2; spire.add(b); return y + h; }, 0);
-  const tipLight = new THREE.Mesh(new THREE.SphereGeometry(1.6), new THREE.MeshBasicMaterial({ color: 0xff4d4d })); tipLight.position.y = 412; spire.add(tipLight);
-  spire.position.set(-260, 0, -380); scene.add(spire); spire.userData.tip = tipLight; scene.userData.spire = spire;
 }
 
-/* ---------------- buildings ---------------- */
+/* ---------------- Portfolio Buildings (North SZR Frontage) ---------------- */
 const windows = [], bodies = [], groups = {};
-const glass = new THREE.MeshStandardMaterial({ color: 0x14203a, metalness: 0.85, roughness: 0.22, emissive: 0x0a1222 });
-const frame = new THREE.MeshStandardMaterial({ color: 0x2b3850, metalness: 0.6, roughness: 0.45 });
+const glass = new THREE.MeshStandardMaterial({ color: 0x0d1527, metalness: 0.88, roughness: 0.18, emissive: 0x050a14 });
+const frameBldg = new THREE.MeshStandardMaterial({ color: 0x1f293d, metalness: 0.6, roughness: 0.45 });
+const podMat = new THREE.MeshStandardMaterial({ color: 0x101726, metalness: 0.4, roughness: 0.65 });
+const goldTrim = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.7, roughness: 0.3, emissive: 0x8a6d20, emissiveIntensity: 0.32 });
+const cyanTrim = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.3, emissive: 0x0284c7, emissiveIntensity: 0.32 });
+const lobbyGlass = new THREE.MeshStandardMaterial({ color: 0xffedd5, emissive: 0xfbbf24, emissiveIntensity: 0.28, roughness: 0.2, metalness: 0.5 });
 const FLOOR_H = 3.2, UNIT_W = 4.2, DEPTH = 15;
-const winGeo = new THREE.PlaneGeometry(UNIT_W * 0.78, FLOOR_H * 0.62);
+const winGeo = new THREE.PlaneGeometry(UNIT_W * 0.74, FLOOR_H * 0.62);
 
 function labelSprite(text, sub) {
   const c = document.createElement("canvas"); c.width = 640; c.height = 170; const g = c.getContext("2d");
-  g.fillStyle = "rgba(10,15,26,.82)"; g.strokeStyle = "rgba(232,182,90,.55)"; g.lineWidth = 3;
+  g.fillStyle = "rgba(10,15,26,.88)"; g.strokeStyle = "rgba(232,182,90,.65)"; g.lineWidth = 3;
   g.beginPath(); g.roundRect(6, 6, 628, 158, 34); g.fill(); g.stroke();
-  g.fillStyle = "#eef2f8"; g.font = "600 52px 'Space Grotesk', Arial"; g.textAlign = "center"; g.fillText(text, 320, 78);
-  g.fillStyle = "#f6d28b"; g.font = "500 34px 'Inter', Arial"; g.fillText(sub, 320, 130);
+  g.fillStyle = "#eef2f8"; g.font = "600 50px 'Space Grotesk', Arial"; g.textAlign = "center"; g.fillText(text, 320, 78);
+  g.fillStyle = "#f6d28b"; g.font = "500 32px 'Inter', Arial"; g.fillText(sub, 320, 130);
   const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); s.scale.set(34, 9, 1); s.renderOrder = 10; return s;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); s.scale.set(30, 8, 1); s.renderOrder = 10; return s;
 }
 
 function addBuilding(b, x, z) {
   const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); groups[b.id] = g;
   const W = b.units_per_floor * UNIT_W + 1.6, H = b.floors * FLOOR_H;
-  // podium
-  const pod = new THREE.Mesh(new THREE.BoxGeometry(W + 10, 4, DEPTH + 10), frame); pod.position.y = 2; g.add(pod);
-  const podGlow = new THREE.Mesh(new THREE.BoxGeometry(W + 10.2, 0.35, DEPTH + 10.2), new THREE.MeshBasicMaterial({ color: 0xe8b65a })); podGlow.position.y = 3.6; g.add(podGlow);
-  // body
-  const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, DEPTH), glass); body.position.y = 4 + H / 2; body.userData.building = b; g.add(body); bodies.push(body);
-  // floor slabs
-  const slab = new THREE.BoxGeometry(W + 0.5, 0.28, DEPTH + 0.5);
-  for (let f = 0; f <= b.floors; f += (b.floors > 20 ? 2 : 1)) { const s = new THREE.Mesh(slab, frame); s.position.y = 4 + f * FLOOR_H; g.add(s); }
-  // vertical fins
-  const fin = new THREE.BoxGeometry(0.35, H, 0.6);
-  for (let i = 0; i <= b.units_per_floor; i++) for (const zz of [DEPTH / 2 + .2, -DEPTH / 2 - .2]) {
-    const f = new THREE.Mesh(fin, frame); f.position.set(-W / 2 + 0.8 + i * UNIT_W, 4 + H / 2, zz); g.add(f); }
-  // crown
-  let top = 4 + H;
-  if (b.style === "spire") {
-    const c1 = new THREE.Mesh(new THREE.BoxGeometry(W * .7, 8, DEPTH * .7), glass); c1.position.y = top + 4; g.add(c1);
-    const sp = new THREE.Mesh(new THREE.CylinderGeometry(.25, .9, 30, 8), frame); sp.position.y = top + 8 + 15; g.add(sp);
-    const beacon = new THREE.Mesh(new THREE.SphereGeometry(.9), new THREE.MeshBasicMaterial({ color: 0xff4d4d })); beacon.position.y = top + 38.5; g.add(beacon); g.userData.beacon = beacon;
-    top += 40;
-  } else {
-    const crown = new THREE.Mesh(new THREE.BoxGeometry(W + .6, 1.2, DEPTH + .6), new THREE.MeshBasicMaterial({ color: b.style === "twin" ? 0x38bdf8 : 0xe8b65a })); crown.position.y = top + 0.6; g.add(crown);
-    top += 2;
+
+  // Tiered architectural podium
+  const pod1 = new THREE.Mesh(new THREE.BoxGeometry(W + 9, 2.5, DEPTH + 7), podMat);
+  pod1.position.y = 1.25; g.add(pod1);
+  const pod2 = new THREE.Mesh(new THREE.BoxGeometry(W + 4, 2.2, DEPTH + 3), frameBldg);
+  pod2.position.y = 3.6; g.add(pod2);
+
+  // Warm illuminated entrance lobby portal facing SZR
+  const lobbyW = Math.min(W * 0.55, 18);
+  const lobby = new THREE.Mesh(new THREE.BoxGeometry(lobbyW, 3.2, 0.4), lobbyGlass);
+  lobby.position.set(0, 2.1, DEPTH / 2 + 1.6); g.add(lobby);
+  const canopy = new THREE.Mesh(new THREE.BoxGeometry(lobbyW + 2, 0.25, 2.8), frameBldg);
+  canopy.position.set(0, 3.8, DEPTH / 2 + 2.4); g.add(canopy);
+
+  // Main tower body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, DEPTH), glass);
+  body.position.y = 4.7 + H / 2; body.userData.building = b; g.add(body); bodies.push(body);
+
+  // Floor slabs & balcony edges
+  const slabGeo = new THREE.BoxGeometry(W + 0.6, 0.25, DEPTH + 1.1);
+  for (let f = 0; f <= b.floors; f += (b.floors > 22 ? 2 : 1)) {
+    const s = new THREE.Mesh(slabGeo, frameBldg);
+    s.position.y = 4.7 + f * FLOOR_H;
+    g.add(s);
   }
-  // unit windows (front and back), coloured by the active mode
-  for (const u of b.units) {
-    for (const side of [1, -1]) {
-      const m = new THREE.Mesh(winGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
-      m.position.set(-W / 2 + 0.8 + (u.index - 0.5) * UNIT_W, 4 + (u.floor - 0.5) * FLOOR_H, side * (DEPTH / 2 + 0.06));
-      if (side < 0) m.rotation.y = Math.PI;
-      m.userData = { building: b, unit: u }; g.add(m); windows.push(m);
+
+  // Vertical architectural mullions & facade fins
+  const finGeo = new THREE.BoxGeometry(0.32, H, 0.55);
+  for (let i = 0; i <= b.units_per_floor; i++) {
+    for (const zz of [DEPTH / 2 + 0.16, -DEPTH / 2 - 0.16]) {
+      const f = new THREE.Mesh(finGeo, frameBldg);
+      f.position.set(-W / 2 + 0.8 + i * UNIT_W, 4.7 + H / 2, zz);
+      g.add(f);
     }
   }
+
+  // Architectural crown per building style (dimmed, no flat glowing slabs)
+  let top = 4.7 + H;
+  if (b.style === "spire") {
+    // Downtown One (36 floors): Art-deco stepped crown & tapered pinnacle with red aviation beacon
+    const c1 = new THREE.Mesh(new THREE.BoxGeometry(W * 0.8, 6, DEPTH * 0.8), frameBldg);
+    c1.position.y = top + 3; g.add(c1);
+    const ring1 = new THREE.Mesh(new THREE.BoxGeometry(W * 0.82, 0.25, DEPTH * 0.82), goldTrim);
+    ring1.position.y = top + 6; g.add(ring1);
+    const c2 = new THREE.Mesh(new THREE.BoxGeometry(W * 0.55, 6, DEPTH * 0.55), frameBldg);
+    c2.position.y = top + 9; g.add(c2);
+    const sp = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.85, 28, 8), frameBldg);
+    sp.position.y = top + 12 + 14; g.add(sp);
+    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.8), new THREE.MeshBasicMaterial({ color: 0xff3b30 }));
+    beacon.position.y = top + 40.5; g.add(beacon); g.userData.beacon = beacon;
+    top += 42;
+  } else if (b.style === "twin") {
+    // Creek View (18 floors): Waterfront twin towers with skybridge and dual crown blades
+    const bladeW = W * 0.42;
+    for (const sx of [-W * 0.26, W * 0.26]) {
+      const blade = new THREE.Mesh(new THREE.BoxGeometry(bladeW, 4.5, DEPTH * 0.9), frameBldg);
+      blade.position.set(sx, top + 2.25, 0); g.add(blade);
+      const bTrim = new THREE.Mesh(new THREE.BoxGeometry(bladeW + 0.2, 0.28, DEPTH * 0.92), cyanTrim);
+      bTrim.position.set(sx, top + 4.5, 0); g.add(bTrim);
+    }
+    // High-level glass skybridge
+    const bridgeY = 4.7 + H * 0.72;
+    const bridge = new THREE.Mesh(new THREE.BoxGeometry(W * 0.35, FLOOR_H * 1.5, DEPTH * 0.65), glass);
+    bridge.position.set(0, bridgeY, 0); g.add(bridge);
+    const bridgeFloor = new THREE.Mesh(new THREE.BoxGeometry(W * 0.36, 0.3, DEPTH * 0.68), frameBldg);
+    bridgeFloor.position.set(0, bridgeY - FLOOR_H * 0.75, 0); g.add(bridgeFloor);
+    top += 5.5;
+  } else if (b.style === "midrise") {
+    // JVC Garden Heights (9 floors): Stepped boutique terrace with rooftop pergola
+    const parapet = new THREE.Mesh(new THREE.BoxGeometry(W + 0.3, 1.1, DEPTH + 0.3), frameBldg);
+    parapet.position.y = top + 0.55; g.add(parapet);
+    const pergRoof = new THREE.Mesh(new THREE.BoxGeometry(W * 0.65, 0.2, DEPTH * 0.6), frameBldg);
+    pergRoof.position.set(0, top + 3.2, 0); g.add(pergRoof);
+    for (const px of [-W * 0.3, 0, W * 0.3]) {
+      for (const pz of [-DEPTH * 0.25, DEPTH * 0.25]) {
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 2.2, 6), frameBldg);
+        post.position.set(px, top + 2.1, pz); g.add(post);
+      }
+    }
+    const terraceTrim = new THREE.Mesh(new THREE.BoxGeometry(W + 0.35, 0.15, DEPTH + 0.35), goldTrim);
+    terraceTrim.position.y = top + 1.1; g.add(terraceTrim);
+    top += 4;
+  } else {
+    // Marina Crest Tower (28 floors): Slanted penthouse crown with architectural louvers
+    const penthouse = new THREE.Mesh(new THREE.BoxGeometry(W * 0.82, 4.2, DEPTH * 0.82), frameBldg);
+    penthouse.position.y = top + 2.1; g.add(penthouse);
+    const crownTrim = new THREE.Mesh(new THREE.BoxGeometry(W * 0.84, 0.28, DEPTH * 0.84), goldTrim);
+    crownTrim.position.y = top + 4.2; g.add(crownTrim);
+    const beacon = new THREE.Mesh(new THREE.SphereGeometry(0.7), new THREE.MeshBasicMaterial({ color: 0xff3b30 }));
+    beacon.position.set(W * 0.35, top + 5.2, 0); g.add(beacon); g.userData.beacon = beacon;
+    top += 5.5;
+  }
+
+  // Unit windows with tone-mapped dimmed lighting
+  for (const u of b.units) {
+    for (const side of [1, -1]) {
+      const winMat = new THREE.MeshStandardMaterial({
+        color: 0x0c1322,
+        emissive: new THREE.Color(0x000000),
+        emissiveIntensity: 0.52,
+        roughness: 0.25,
+        metalness: 0.75
+      });
+      const m = new THREE.Mesh(winGeo, winMat);
+      m.position.set(-W / 2 + 0.8 + (u.index - 0.5) * UNIT_W, 4.7 + (u.floor - 0.5) * FLOOR_H, side * (DEPTH / 2 + 0.08));
+      if (side < 0) m.rotation.y = Math.PI;
+      m.userData = { building: b, unit: u };
+      g.add(m);
+      windows.push(m);
+    }
+  }
+
   const occ = b.units.filter(u => u.occupied).length;
-  const lbl = labelSprite(b.name, `${Math.round(occ / b.units.length * 100)}% occupied · ${b.units.length} units`); lbl.position.y = top + 9; g.add(lbl);
+  const lbl = labelSprite(b.name, `${Math.round(occ / b.units.length * 100)}% occupied · ${b.units.length} units`);
+  lbl.position.y = top + 7.5; g.add(lbl);
   g.userData = { building: b, height: top };
 }
 
 function paint() {
   for (const w of windows) {
-    const key = MODES[mode].key(w.userData.unit);
-    const c = new THREE.Color(PALETTE[key]);
+    const key = MODES[mode].key(w.userData.unit) || "vacant";
+    const hex = PALETTE[key] || "#1e293b";
+    const c = new THREE.Color(hex);
     const isVacant = key === "vacant";
-    w.material.color.copy(c).multiplyScalar(isVacant ? 0.55 : (w === hovered ? 2.4 : 1.25));
+    const isHovered = (w === hovered);
+
+    if (isVacant) {
+      w.material.color.setHex(0x0c1322);
+      w.material.emissive.setHex(0x040711);
+      w.material.emissiveIntensity = 0.08;
+    } else if (isHovered) {
+      w.material.color.copy(c);
+      w.material.emissive.copy(c);
+      w.material.emissiveIntensity = 1.15;
+    } else {
+      // Soft, comfortable, realistic luxury Dubai skyline interior lighting
+      w.material.color.copy(c).multiplyScalar(0.7);
+      w.material.emissive.copy(c);
+      w.material.emissiveIntensity = 0.52;
+    }
   }
   $("legend").innerHTML = MODES[mode].legend.map(([k, l]) => `<span><i style="background:${PALETTE[k]}"></i>${esc(l)}</span>`).join("");
 }
@@ -328,8 +657,69 @@ function paint() {
 /* ---------------- post-processing ---------------- */
 const composer = new EffectComposer(renderer);
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.55, 0.62); composer.addPass(bloom);
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.45, 0.82);
+composer.addPass(bloom);
 composer.addPass(new OutputPass());
+
+
+/* ---------------- Camera Modes & SZR 45s Tour ---------------- */
+let tourRunning = false, tourTimer = null;
+const CAM_PRESETS = {
+  szr: { pos: new THREE.Vector3(165, 95, 175), target: new THREE.Vector3(0, 25, -20) },
+  drive: { pos: new THREE.Vector3(-95, 6, 26), target: new THREE.Vector3(45, 20, -50) },
+  downtown: { pos: new THREE.Vector3(135, 75, 110), target: new THREE.Vector3(-140, 55, -80) }
+};
+
+function setCameraView(viewKey) {
+  if (viewKey === "tour") {
+    startTour();
+    return;
+  }
+  stopTour();
+  const p = CAM_PRESETS[viewKey];
+  if (!p) return;
+  flight = { t: 0, fromPos: camera.position.clone(), toPos: p.pos.clone(), fromT: controls.target.clone(), toT: p.target.clone() };
+  controls.autoRotate = (viewKey === "szr" && !reduceMotion);
+}
+
+function stopTour() {
+  tourRunning = false;
+  if (tourTimer) { clearInterval(tourTimer); tourTimer = null; }
+  const tourBtn = document.querySelector('button[data-cam="tour"]');
+  if (tourBtn) tourBtn.setAttribute("aria-pressed", "false");
+}
+
+function startTour() {
+  tourRunning = true;
+  document.querySelectorAll("#camViews button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.cam === "tour")));
+  const tourWaypoints = [
+    { pos: new THREE.Vector3(165, 95, 175), target: new THREE.Vector3(0, 25, -20), bldg: null },
+    { pos: new THREE.Vector3(-110, 48, 20), target: new THREE.Vector3(-135, 45, -55), bldg: "downtown-one" },
+    { pos: new THREE.Vector3(-30, 38, 20), target: new THREE.Vector3(-45, 36, -55), bldg: "marina-crest" },
+    { pos: new THREE.Vector3(60, 28, 20), target: new THREE.Vector3(45, 25, -55), bldg: "creek-view" },
+    { pos: new THREE.Vector3(150, 18, 20), target: new THREE.Vector3(135, 16, -55), bldg: "jvc-garden" },
+    { pos: new THREE.Vector3(-95, 6, 26), target: new THREE.Vector3(45, 20, -50), bldg: null }
+  ];
+  let step = 0;
+  function nextStep() {
+    if (!tourRunning) return;
+    const wp = tourWaypoints[step % tourWaypoints.length];
+    flight = { t: 0, fromPos: camera.position.clone(), toPos: wp.pos.clone(), fromT: controls.target.clone(), toT: wp.target.clone() };
+    if (wp.bldg && DATA) {
+      document.querySelectorAll(".bitem").forEach(el => el.setAttribute("aria-current", String(el.dataset.id === wp.bldg)));
+    }
+    step++;
+  }
+  nextStep();
+  tourTimer = setInterval(nextStep, 7500);
+}
+
+document.querySelectorAll("#camViews button").forEach(b => {
+  b.onclick = () => {
+    document.querySelectorAll("#camViews button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    setCameraView(b.dataset.cam);
+  };
+});
 
 /* ---------------- interaction ---------------- */
 const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), tip = $("tip");
@@ -389,15 +779,22 @@ function select(id) {
 /* ---------------- panels ---------------- */
 function overview(d) {
   const t = d.totals;
+  const expiredCount = Number(t.expired || 0);
+  const due180Count = Number(t.due_180 || 0);
+  const due90Count = Number(t.due_90 || 0);
+  const occupiedCount = Number(t.occupied || 0);
+  const vacantCount = Number(t.vacant !== undefined ? t.vacant : (t.units - occupiedCount));
+  const laterCount = Math.max(0, occupiedCount - due90Count - due180Count - expiredCount);
+
   $("asof").textContent = `Sample portfolio · ${d.today}`;
   $("kpis").innerHTML = `
     <div class="kpi hero"><div><small>Annual rent roll</small><b>AED ${(t.annual_rent / 1e6).toFixed(1)}M</b></div><small>${t.units} units · ${d.buildings.length} buildings</small></div>
     <div class="kpi"><b>${t.occupancy_percent}%</b><small>occupied</small></div>
-    <div class="kpi"><b class="tone-warn">${t.due_90}</b><small>leases end in 90 days</small></div>
-    <div class="kpi"><b class="tone-bad">${t.over_cap}</b><small>proposals over RERA cap</small></div>
-    <div class="kpi"><b class="tone-bad">${t.expired}</b><small>expired, not renewed</small></div>`;
-  const parts = [["later", t.occupied - t.due_90 - t.due_180 - t.expired, "Over 6 months"], ["due_180", t.due_180, "3–6 months"], ["due_90", t.due_90, "Under 90 days"], ["expired", t.expired, "Expired"], ["vacant", t.vacant, "Vacant"]];
-  $("stack").innerHTML = parts.map(([k, n]) => `<span style="width:${n / t.units * 100}%;background:${k === "vacant" ? "#334155" : PALETTE[k]}"></span>`).join("");
+    <div class="kpi"><b class="tone-warn">${due90Count}</b><small>leases end in 90 days</small></div>
+    <div class="kpi"><b class="tone-bad">${t.over_cap || 0}</b><small>proposals over RERA cap</small></div>
+    <div class="kpi"><b class="tone-bad">${expiredCount}</b><small>expired, not renewed</small></div>`;
+  const parts = [["later", laterCount, "Over 6 months"], ["due_180", due180Count, "3–6 months"], ["due_90", due90Count, "Under 90 days"], ["expired", expiredCount, "Expired"], ["vacant", vacantCount, "Vacant"]];
+  $("stack").innerHTML = parts.map(([k, n]) => `<span style="width:${(n / t.units * 100) || 0}%;background:${k === "vacant" ? "#334155" : PALETTE[k]}"></span>`).join("");
   $("stackLegend").innerHTML = parts.map(([k, n, l]) => `<span><i style="background:${k === "vacant" ? "#334155" : PALETTE[k]}"></i>${l}<b>${n}</b></span>`).join("");
   $("blist").innerHTML = d.buildings.map(b => {
     const occ = b.units.filter(u => u.occupied).length, pct = Math.round(occ / b.units.length * 100);
@@ -545,21 +942,108 @@ const clock = new THREE.Clock();
 (function loop() {
   const dt = clock.getDelta(), t = clock.elapsedTime;
   if (flight) {
-    flight.t = Math.min(1, flight.t + dt / 1.2); const e = 1 - Math.pow(1 - flight.t, 3);
-    camera.position.lerpVectors(flight.fromPos, flight.toPos, e); controls.target.lerpVectors(flight.fromT, flight.toT, e);
+    flight.t = Math.min(1, flight.t + dt / 1.4);
+    const e = 1 - Math.pow(1 - flight.t, 3);
+    camera.position.lerpVectors(flight.fromPos, flight.toPos, e);
+    controls.target.lerpVectors(flight.fromT, flight.toT, e);
     if (flight.t >= 1) flight = null;
   }
+
+  // Animate Dynamic SZR Highway Traffic
+  for (let i = 0; i < trafficCars.length; i++) {
+    const c = trafficCars[i];
+    c.mesh.position.x += c.speed * dt;
+    if (c.isEast && c.mesh.position.x > HW_LEN / 2) c.mesh.position.x = -HW_LEN / 2;
+    else if (!c.isEast && c.mesh.position.x < -HW_LEN / 2) c.mesh.position.x = HW_LEN / 2;
+  }
+
+  // Animate Dubai Metro Train along Elevated Viaduct
+  trainGroup.position.x -= trainSpeed * dt;
+  if (trainGroup.position.x < -HW_LEN / 2) trainGroup.position.x = HW_LEN / 2;
+
+  // Strobe & Beacon Blinking
   const blink = (Math.sin(t * 3) > 0.6) ? 1 : 0.15;
   Object.values(groups).forEach(g => g.userData.beacon && (g.userData.beacon.material.color.setRGB(blink, blink * 0.15, blink * 0.15)));
-  if (scene.userData.spire) scene.userData.spire.userData.tip.visible = Math.sin(t * 2.2) > 0;
-  controls.update(); composer.render();
+  if (burj && burj.userData.strobe) burj.userData.strobe.visible = (Math.sin(t * 4.5) > 0.3);
+
+  controls.update();
+  composer.render();
   requestAnimationFrame(loop);
 })();
 
-function processAndRenderPortfolio(d) {
+function enrichPortfolio(raw) {
+  const todayStr = raw.generated_for || new Date().toISOString().split('T')[0];
+  const today = new Date(todayStr);
+  const totals = { units: 0, occupied: 0, vacant: 0, expired: 0, due_90: 0, due_180: 0, over_cap: 0, annual_rent: 0 };
+
+  const buildings = raw.buildings.map(b => {
+    const units = b.units.map(u => {
+      totals.units++;
+      const unit = { ...u };
+      if (!unit.occupied) {
+        totals.vacant++;
+        unit.status = "vacant";
+        return unit;
+      }
+      totals.occupied++;
+      totals.annual_rent += (unit.annual_rent || 0);
+
+      const endDate = new Date(unit.lease_end);
+      const days = Math.round((endDate - today) / (1000 * 60 * 60 * 24));
+      unit.days_to_expiry = days;
+
+      let band = "later";
+      if (days < 0) band = "expired";
+      else if (days <= 90) band = "due_90";
+      else if (days <= 180) band = "due_180";
+      unit.expiry = band;
+
+      if (totals[band] !== undefined) totals[band]++;
+
+      if (unit.proposed_rent && b.avg_rent) {
+        const cap = calculateReraCapClient(unit.annual_rent, b.avg_rent);
+        const proposedPct = Math.round((unit.proposed_rent - unit.annual_rent) / unit.annual_rent * 100);
+        const compliant = unit.proposed_rent <= cap.max_rent;
+        unit.rent_check = {
+          compliant: compliant,
+          max_percent: cap.max_percent,
+          max_rent: cap.max_rent,
+          proposed_percent: proposedPct,
+          reason: compliant ? `Within RERA cap of +${cap.max_percent}%` : `Exceeds RERA cap (+${proposedPct}% vs max +${cap.max_percent}%)`
+        };
+        if (!compliant) totals.over_cap++;
+      }
+
+      unit.status = (unit.rent_check && !unit.rent_check.compliant) ? "over_cap" : unit.expiry;
+      return unit;
+    });
+
+    return { ...b, units: units };
+  });
+
+  totals.occupancy_percent = totals.units ? Math.round(totals.occupied / totals.units * 1000) / 10 : 0;
+  return {
+    today: todayStr,
+    totals: totals,
+    buildings: buildings,
+    note: raw.note || ""
+  };
+}
+
+function processAndRenderPortfolio(raw) {
+  const d = (raw.totals && raw.totals.expired !== undefined) ? raw : enrichPortfolio(raw);
   DATA = d;
-  const n = d.buildings.length, gap = 62;
-  d.buildings.forEach((b, i) => addBuilding(b, (i - (n - 1) / 2) * gap, (i % 2 ? -10 : 8)));
+  // Place portfolio towers prominently along the Sheikh Zayed Road frontage at Z = -52
+  const szrPositions = {
+    "downtown-one": { x: -135, z: -52 },
+    "marina-crest": { x: -45, z: -52 },
+    "creek-view":   { x: 45, z: -52 },
+    "jvc-garden":   { x: 135, z: -52 }
+  };
+  d.buildings.forEach((b, i) => {
+    const pos = szrPositions[b.id] || { x: (i - (d.buildings.length - 1) / 2) * 85, z: -52 };
+    addBuilding(b, pos.x, pos.z);
+  });
   overview(d); paint();
   $("loading").style.opacity = 0; setTimeout(() => $("loading").remove(), 600);
 }
@@ -572,39 +1056,7 @@ fetch("/api/portfolio")
     fetch("sample-portfolio.json")
       .then(r => r.json())
       .then(raw => {
-        // Calculate totals on client side
-        let totalRent = 0, occupiedCount = 0, totalUnits = 0, due90 = 0, overCap = 0;
-        const today = new Date();
-        raw.buildings.forEach(b => {
-          b.units.forEach(u => {
-            totalUnits++;
-            if (u.occupied) {
-              occupiedCount++;
-              totalRent += (u.annual_rent || 0);
-              const endDate = new Date(u.lease_end);
-              const days = Math.round((endDate - today) / (1000*60*60*24));
-              u.days_to_expiry = days;
-              if (days <= 90) due90++;
-              const cap = calculateReraCapClient(u.annual_rent, b.avg_rent);
-              const proposed = u.proposed_rent || u.annual_rent;
-              const compliant = proposed <= cap.max_rent;
-              u.rent_check = { compliant: compliant, max_percent: cap.max_percent, proposed_percent: Math.round((proposed - u.annual_rent)/u.annual_rent*100) };
-              if (!compliant) overCap++;
-            }
-          });
-        });
-        const enriched = {
-          today: today.toISOString().split('T')[0],
-          buildings: raw.buildings,
-          totals: {
-            units: totalUnits,
-            occupied: occupiedCount,
-            occupancy_percent: Math.round(occupiedCount / totalUnits * 100),
-            annual_rent: totalRent,
-            due_90: due90,
-            over_cap: overCap
-          }
-        };
+        const enriched = enrichPortfolio(raw);
         processAndRenderPortfolio(enriched);
       })
       .catch(() => {
