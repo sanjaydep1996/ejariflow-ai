@@ -7,6 +7,7 @@ another site, so a web page you visit can't use it to read your contracts.
 """
 
 import argparse
+import datetime as dt
 import http.server
 import json
 import pathlib
@@ -16,6 +17,7 @@ from typing import Any, Dict, Tuple
 from . import rera
 from .audit import audit_contract
 from .contract import parse_contract
+from .notice import generate_90day_notice
 from .portfolio import analyse, load_sample
 
 WEB = pathlib.Path(__file__).resolve().parent.parent / "web"
@@ -44,6 +46,22 @@ def route(method: str, path: str, p: Dict[str, Any]) -> Tuple[int, Any]:
             return 200, contract
         avg = float(p["average_rent"]) if p.get("average_rent") not in (None, "") else None
         return 200, {"contract": contract, "audit": audit_contract(contract, average_rent=avg)}
+    if method == "POST" and path == "/api/notice/generate":
+        notice = generate_90day_notice(
+            tenant=str(p.get("tenant") or "Tenant"),
+            landlord=str(p.get("landlord") or "Landlord"),
+            property_name=str(p.get("property_name") or "Property"),
+            unit=str(p.get("unit") or "101"),
+            area=str(p.get("area") or "Dubai"),
+            current_rent=_num(p, "current_rent"),
+            average_rent=_num(p, "average_rent"),
+            lease_end_date=str(p.get("lease_end_date") or dt.date.today().isoformat()),
+            notice_date=p.get("notice_date"),
+            proposed_rent=float(p["proposed_rent"]) if p.get("proposed_rent") not in (None, "") else None,
+            ejari_number=p.get("ejari_number"),
+            cheques=int(p.get("cheques") or 4),
+        )
+        return 200, notice
     return 404, {"error": "Not found"}
 
 

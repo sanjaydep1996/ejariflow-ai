@@ -1,10 +1,16 @@
 # 🏢 EjariFlow AI
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
+[![Live Demo](https://img.shields.io/badge/demo-live-brightgreen.svg)](https://sanjaydep1996.github.io/ejariflow-ai/)
+
 **Dubai tenancy contracts, RERA rent caps and portfolio compliance, in one local-first engine.**
+
+**[▶ Open Live Interactive 3D Portfolio](https://sanjaydep1996.github.io/ejariflow-ai/)** *(runs 100% in-browser with Three.js bloom lighting, RERA calculator, and bilingual notice generator)*
 
 EjariFlow AI reads Dubai tenancy contracts (English and Arabic), checks them against Dubai's rent laws, and shows a whole property portfolio as an interactive 3D map, so brokers, property managers and PropTech teams can spot non-compliant contracts and expiring leases before they become disputes.
 
-> **Status:** foundation release (v0.1). The rules engine, contract parser, audit, API and 3D portfolio view work today with 20 automated tests. Scanned-document OCR and the AI extraction stage are next (see the [Roadmap](#-roadmap)).
+> **Status:** foundation release (v0.2). The rules engine, contract parser, audit, bilingual 90-day notice generator, API and 3D portfolio view work today with 23 automated tests. Scanned-document OCR and the AI extraction stage are next (see the [Roadmap](#-roadmap)).
 
 ---
 
@@ -64,17 +70,25 @@ Checks each special-condition clause and flags:
 
 Every finding names the clause, explains the problem in plain English, and cites the rule. Clauses it can't check automatically are listed as **unchecked**, not silently passed.
 
-### 4. 🏙️ 3D portfolio view (Three.js)
+### 4. 📜 Bilingual 90-Day Renewal Notice Generator (English + Arabic)
+Under Article 14 of Dubai Law No. 26 of 2007 (amended by Law No. 33 of 2008), any change to lease conditions or rent must be formally communicated at least 90 days prior to contract expiry.
+EjariFlow AI auto-generates formal, legally grounded renewal letters in parallel English and Modern Standard Arabic:
+- Validates the 90-day statutory deadline from the contract end date.
+- Embeds the official RERA benchmark comparison and permitted cap percentage (Decree No. 43 of 2013).
+- Outputs printable, copy-ready legal notices ready to serve or submit before the Rental Disputes Centre (RDC).
+
+### 5. 🏙️ 3D portfolio view (Three.js)
 An interactive 3D map of every building and unit:
 
 - **Colour = status:** lease > 6 months · ends in 3–6 months · ends in < 90 days (inside the renewal-notice window) · expired · **proposed rent over the RERA cap** · vacant.
 - **Hover a unit** to see its rent, lease end date, days left, and rent-cap check.
 - **Portfolio KPIs:** units, occupancy, annual rent roll, leases ending within 90 days, expired leases, proposals over the cap.
 
-### 5. 🔌 Local REST API
+### 6. 🔌 Local REST API
 | Method | Endpoint | Does |
 |---|---|---|
 | `POST` | `/api/rera/check` | Rent increase check `{current_rent, proposed_rent, average_rent}` |
+| `POST` | `/api/notice/generate` | Generates bilingual 90-day renewal notice (EN/AR) |
 | `POST` | `/api/contract/parse` | Contract text → fields `{text}` |
 | `POST` | `/api/contract/audit` | Parse + audit `{text, average_rent}` |
 | `GET` | `/api/portfolio` | Portfolio analysis for the 3D view |

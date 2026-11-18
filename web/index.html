@@ -120,6 +120,7 @@
     <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
     <button role="tab" aria-selected="false" data-tab="rent">Rent check</button>
     <button role="tab" aria-selected="false" data-tab="audit">Contract audit</button>
+    <button role="tab" aria-selected="false" data-tab="notice">90-Day notice</button>
   </div>
 
   <section class="pane on" id="pane-overview" role="tabpanel">
@@ -148,6 +149,27 @@
     <div class="field"><label for="avg2">Area average rent from the RERA index (AED / year)</label><input id="avg2" type="number" inputmode="numeric" value="100000"></div>
     <div class="btns"><button class="btn" id="audit">Audit contract</button><button class="btn ghost" id="sample">Load sample</button></div>
     <div id="auditOut"></div>
+    </section>
+
+  <section class="pane" id="pane-notice" role="tabpanel">
+    <div>
+      <p class="eyebrow">Bilingual 90-Day Renewal Notice (EN + AR)</p>
+      <p class="muted" style="margin:0 0 12px">Article 14 of Dubai Law No. 26/2007 requires 90 days written notice to alter terms or rent. Decrees No. 43/2013 sets the legal cap.</p>
+    </div>
+    <div class="grid3">
+      <div class="field"><label for="n_tenant">Tenant name</label><input id="n_tenant" type="text" value="Ahmed Al-Mansoori"></div>
+      <div class="field"><label for="n_landlord">Landlord / Agent</label><input id="n_landlord" type="text" value="Emaar Properties PJSC"></div>
+      <div class="field"><label for="n_property">Property & Unit</label><input id="n_property" type="text" value="Marina Crest Tower · Unit 104"></div>
+    </div>
+    <div class="grid3" style="margin-top:8px">
+      <div class="field"><label for="n_cur">Current rent</label><input id="n_cur" type="number" value="69000"></div>
+      <div class="field"><label for="n_avg">Area average</label><input id="n_avg" type="number" value="110000"></div>
+      <div class="field"><label for="n_end">Lease expiry date</label><input id="n_end" type="date" value="2027-02-22"></div>
+    </div>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn" id="btnDraftNotice">📜 Generate 90-Day Notice (EN/AR)</button>
+    </div>
+    <div id="noticeOut" style="margin-top:12px"></div>
   </section>
 </aside>
 
@@ -359,7 +381,7 @@ function select(id) {
     <p class="eyebrow">${esc(b.area)}</p><h2>${esc(b.name)}</h2>
     <div class="mini"><div><b>${Math.round(occ.length / b.units.length * 100)}%</b><small>occupied</small></div><div><b>${(rent / 1e6).toFixed(1)}M</b><small>AED / year</small></div><div><b>${aed(b.avg_rent).replace("AED ", "")}</b><small>area average</small></div></div>
     <p class="eyebrow">Over the RERA cap · ${over.length}</p>${over.slice(0, 6).map(u => row(u, `+${u.rent_check.proposed_percent}% / ${u.rent_check.max_percent}%`, "#f43f5e")).join("") || '<p class="muted">None.</p>'}
-    <p class="eyebrow" style="margin-top:14px">Ending within 90 days · ${soon.length}</p>${soon.slice(0, 6).map(u => row(u, u.days_to_expiry < 0 ? "expired" : u.days_to_expiry + " days", u.days_to_expiry < 0 ? "#f43f5e" : "#fb923c")).join("") || '<p class="muted">None.</p>'}
+    <p class="eyebrow" style="margin-top:14px">Ending within 90 days · ${soon.length}</p>${soon.slice(0, 6).map(u => row(u, u.days_to_expiry < 0 ? "expired" : u.days_to_expiry + " days", u.days_to_expiry < 0 ? "#f43f5e" : "#fb923c") + `<button class="btn ghost" style="font-size:10px;padding:2px 8px;margin-bottom:6px;float:right" onclick="quickNotice('${esc(u.unit)}', ${u.annual_rent}, ${b.avg_rent}, '${esc(u.lease_end)}', '${esc(b.name)}', '${esc(u.tenant || "")}')">📜 90-Day Notice</button>`).join("") || '<p class="muted">None.</p>'}
     <p class="muted" style="margin-top:12px">Renewal changes need 90 days' notice (Law 26/2007).</p>`;
   $("drawer").classList.add("on");
 }
@@ -420,6 +442,98 @@ $("audit").onclick = async () => {
     <p class="muted" style="margin:10px 0 0">${esc(a.disclaimer)}</p></div>`;
 };
 
+/* ---------------- 90-day notice handler ---------------- */
+function quickNotice(unitNo, annualRent, avgRent, leaseEnd, bldgName, tenantName) {
+  $('n_tenant').value = tenantName || ('Tenant ' + unitNo);
+  $('n_property').value = bldgName + ' · Unit ' + unitNo;
+  $('n_cur').value = annualRent;
+  $('n_avg').value = avgRent;
+  $('n_end').value = leaseEnd;
+  const tabBtn = document.querySelector('button[data-tab="notice"]');
+  if (tabBtn) tabBtn.click();
+  generateNotice();
+}
+
+function calculateReraCapClient(current, average) {
+  if (current <= 0 || average <= 0) return { max_percent: 0, max_rent: current, gap: 0 };
+  const gap = Math.round(((average - current) / average * 100) * 100) / 100;
+  let max_pct = 20;
+  if (gap <= 10) max_pct = 0;
+  else if (gap <= 20) max_pct = 5;
+  else if (gap <= 30) max_pct = 10;
+  else if (gap <= 40) max_pct = 15;
+  const max_rent = Math.round(current * (1 + max_pct / 100));
+  return { max_percent: max_pct, max_rent: max_rent, gap: gap };
+}
+
+async function generateNotice() {
+  const tenant = $('n_tenant').value.trim() || "Tenant";
+  const landlord = $('n_landlord').value.trim() || "Landlord";
+  const property = $('n_property').value.trim() || "Unit";
+  const cur = parseFloat($('n_cur').value) || 80000;
+  const avg = parseFloat($('n_avg').value) || 100000;
+  const end = $('n_end').value || new Date(Date.now() + 100*86400000).toISOString().split('T')[0];
+
+  const payload = {
+    tenant: tenant,
+    landlord: landlord,
+    property_name: property,
+    unit: property.split('·')[1]?.replace('Unit', '').trim() || "101",
+    area: property.split('·')[0]?.trim() || "Dubai",
+    current_rent: cur,
+    average_rent: avg,
+    lease_end_date: end,
+    cheques: 4
+  };
+
+  let r = null;
+  try {
+    const res = await post("/api/notice/generate", payload);
+    if (res && res.status === "generated") r = res;
+  } catch(e) {}
+
+  if (!r) {
+    // Client-side fallback for static preview / GitHub Pages
+    const cap = calculateReraCapClient(cur, avg);
+    const endDateObj = new Date(end);
+    const today = new Date();
+    const days = Math.round((endDateObj - today) / (1000 * 60 * 60 * 24));
+    const onTime = days >= 90;
+
+    r = {
+      compliant: onTime,
+      on_time: onTime,
+      days_notice_given: days,
+      timing_warning: onTime ? "" : `WARNING: Only ${days} days notice provided. Law No. 26/2007 requires at least 90 days.`,
+      current_rent: cur,
+      average_rent: avg,
+      max_rent_allowed: cap.max_rent,
+      max_increase_percent: cap.max_percent,
+      proposed_rent: cap.max_rent,
+      increase_percent: cap.max_percent,
+      citation: "Dubai Law No. 26 of 2007, Art. 14 & Dubai Decree No. 43 of 2013",
+      notice_en: `================================================================================\nFORMAL NOTICE OF TENANCY CONTRACT RENEWAL & RENT REVISION\nPursuant to Dubai Law No. 26 of 2007 (Art. 14) & Dubai Decree No. 43 of 2013\n================================================================================\nDate: ${today.toLocaleDateString('en-GB')}\n\nTO (TENANT): ${tenant}\nFROM (LANDLORD): ${landlord}\nPROPERTY: ${property}, Dubai, UAE\nCURRENT LEASE EXPIRY: ${endDateObj.toLocaleDateString('en-GB')}\n\nDear ${tenant},\n\nPursuant to Article 14 of Dubai Law No. 26 of 2007, please accept this formal 90-day notification regarding the renewal of your lease:\n\n1. CURRENT ANNUAL RENT: AED ${cur.toLocaleString()}\n2. RERA AREA BENCHMARK: AED ${avg.toLocaleString()} (Gap: ${cap.gap}%)\n3. STATUTORY RERA CAP: +${cap.max_percent}% (Maximum Allowed: AED ${cap.max_rent.toLocaleString()})\n4. PROPOSED REVISED RENT: AED ${cap.max_rent.toLocaleString()}\n5. PAYMENT TERMS: 4 equal post-dated cheques.\n\nKindly confirm your intent within 30 days of this notice.\n\nSincerely,\n${landlord}`,
+      notice_ar: `================================================================================\nإشعار رسمي بتعديل بدلات وشروط عقد الإيجار السنوي\nعملاً بالمادة (14) من القانون رقم (26) لسنة 2007 والمرسوم رقم (43) لسنة 2013\n================================================================================\nالتاريخ: ${today.toLocaleDateString('en-GB')}\n\nإلى المستأجر: ${tenant}\nمن المؤجر: ${landlord}\nالعقار: ${property}، دبي، الإمارات العربية المتحدة\nتاريخ انتهاء العقد الحالي: ${endDateObj.toLocaleDateString('en-GB')}\n\nتحية طيبة وبعد،\n\nعملاً بأحكام المادة (14) من القانون رقم (26) لسنة 2007 وتعديلاته، والمرسوم رقم (43) لسنة 2013:\n\n1. بدل الإيجار السنوي الحالي: ${cur.toLocaleString()} درهم إماراتي\n2. متوسط أجر المثل المعتمد من ريرا: ${avg.toLocaleString()} درهم إماراتي (فارق: ${cap.gap}%)\n3. الحد الأقصى القانوني للزيادة: +${cap.max_percent}% (سقف الإيجار: ${cap.max_rent.toLocaleString()} درهم)\n4. بدل الإيجار الجديد المقترح: ${cap.max_rent.toLocaleString()} درهم إماراتي\n5. شروط السداد: بموجب 4 شيكات مصرفية آجلة.\n\nوتفضلوا بقبول فائق الاحترام والتقدير،\n${landlord}`
+    };
+  }
+
+  const out = $('noticeOut');
+  out.innerHTML = `
+    <div class="result ${r.on_time ? 'ok' : 'bad'}" style="margin-top:10px">
+      <div class="verdict"><span class="dot"></span>${r.on_time ? '90-Day Statutory Notice Compliant' : 'Notice Timing Non-Compliant'}</div>
+      <div class="muted">${r.days_notice_given} days remaining until expiry · Permitted RERA cap: <b>+${r.max_increase_percent}%</b> (AED ${r.max_rent_allowed.toLocaleString()})</div>
+      ${r.timing_warning ? `<p style="color:var(--bad);font-weight:600;margin:6px 0 0">${esc(r.timing_warning)}</p>` : ''}
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px">
+      <button class="btn ghost" style="padding:4px 10px;font-size:11px" onclick="$('noticeTextEn').style.display='block';$('noticeTextAr').style.display='none'">English Notice</button>
+      <button class="btn ghost" style="padding:4px 10px;font-size:11px" onclick="$('noticeTextEn').style.display='none';$('noticeTextAr').style.display='block'">الخطاب القانوني العربي</button>
+    </div>
+    <textarea id="noticeTextEn" style="width:100%;height:180px;margin-top:8px;font-family:monospace;font-size:11px;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:8px;color:#fff">${esc(r.notice_en)}</textarea>
+    <textarea id="noticeTextAr" style="display:none;width:100%;height:180px;margin-top:8px;font-family:monospace;font-size:11px;direction:rtl;background:rgba(0,0,0,0.4);border:1px solid var(--border);border-radius:6px;padding:8px;color:#fff">${esc(r.notice_ar)}</textarea>
+  `;
+}
+$('btnDraftNotice').onclick = generateNotice;
+
 /* ---------------- run ---------------- */
 function resize() {
   const w = innerWidth, h = innerHeight; renderer.setSize(w, h); composer.setSize(w, h); bloom.setSize(w, h);
@@ -442,13 +556,61 @@ const clock = new THREE.Clock();
   requestAnimationFrame(loop);
 })();
 
-fetch("/api/portfolio").then(r => r.json()).then(d => {
+function processAndRenderPortfolio(d) {
   DATA = d;
   const n = d.buildings.length, gap = 62;
   d.buildings.forEach((b, i) => addBuilding(b, (i - (n - 1) / 2) * gap, (i % 2 ? -10 : 8)));
   overview(d); paint();
   $("loading").style.opacity = 0; setTimeout(() => $("loading").remove(), 600);
-}).catch(() => { $("loading").textContent = "Couldn't load the portfolio. Is the server running?"; });
+}
+
+fetch("/api/portfolio")
+  .then(r => { if (!r.ok) throw new Error("offline"); return r.json(); })
+  .then(processAndRenderPortfolio)
+  .catch(() => {
+    // Static GitHub Pages fallback
+    fetch("sample-portfolio.json")
+      .then(r => r.json())
+      .then(raw => {
+        // Calculate totals on client side
+        let totalRent = 0, occupiedCount = 0, totalUnits = 0, due90 = 0, overCap = 0;
+        const today = new Date();
+        raw.buildings.forEach(b => {
+          b.units.forEach(u => {
+            totalUnits++;
+            if (u.occupied) {
+              occupiedCount++;
+              totalRent += (u.annual_rent || 0);
+              const endDate = new Date(u.lease_end);
+              const days = Math.round((endDate - today) / (1000*60*60*24));
+              u.days_to_expiry = days;
+              if (days <= 90) due90++;
+              const cap = calculateReraCapClient(u.annual_rent, b.avg_rent);
+              const proposed = u.proposed_rent || u.annual_rent;
+              const compliant = proposed <= cap.max_rent;
+              u.rent_check = { compliant: compliant, max_percent: cap.max_percent, proposed_percent: Math.round((proposed - u.annual_rent)/u.annual_rent*100) };
+              if (!compliant) overCap++;
+            }
+          });
+        });
+        const enriched = {
+          today: today.toISOString().split('T')[0],
+          buildings: raw.buildings,
+          totals: {
+            units: totalUnits,
+            occupied: occupiedCount,
+            occupancy_percent: Math.round(occupiedCount / totalUnits * 100),
+            annual_rent: totalRent,
+            due_90: due90,
+            over_cap: overCap
+          }
+        };
+        processAndRenderPortfolio(enriched);
+      })
+      .catch(() => {
+        $("loading").textContent = "Couldn't load portfolio. Is server running?";
+      });
+  });
 </script>
 </body>
 </html>
