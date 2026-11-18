@@ -36,6 +36,11 @@
   .tabs { display:flex; gap:2px; padding:8px 8px 0; border-bottom:1px solid var(--line); overflow-x:auto; white-space:nowrap; scrollbar-width:none }
   .tabs::-webkit-scrollbar { display:none }
   
+  /* Onboarding Guided Walkthrough */
+  #walkthroughModal { position:fixed; bottom:28px; right:28px; width:380px; max-width:calc(100vw - 56px); z-index:90; padding:20px; border-radius:16px; box-shadow:0 24px 60px rgba(0,0,0,0.65); border:1px solid rgba(232,182,90,0.35); background:rgba(15,21,34,0.92); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px); transition:opacity .3s, transform .3s }
+  .wt-dot { width:7px; height:7px; border-radius:50%; background:rgba(255,255,255,0.2); transition:all .2s }
+  .wt-dot.on { width:18px; border-radius:4px; background:var(--gold) }
+
   /* 3D Unit Walkthrough Modal */
   #unitModal { position:fixed; inset:0; z-index:100; background:var(--bg); display:none; flex-direction:column }
   #unitModal.on { display:flex }
@@ -120,6 +125,7 @@
     <div><h1>Ejari<b>Flow</b> AI</h1><small>Dubai Tenancy Compliance · Sheikh Zayed Road Digital Twin</small></div>
   </div>
   <span class="chip" id="asof">Sample portfolio</span>
+  <button class="chip" id="btnLaunchWalkthrough" style="cursor:pointer;background:rgba(232,182,90,0.1);display:inline-flex;align-items:center;gap:5px;border-color:rgba(232,182,90,0.4)">💡 Quick Tour</button>
   
   <div class="seg" role="group" aria-label="Camera Views" id="camViews" style="margin-left:auto">
     <button data-cam="szr" aria-pressed="true">🛣️ SZR Corridor</button>
@@ -1861,6 +1867,111 @@ document.querySelectorAll('#unitViewSeg button').forEach(b => {
   b.onclick = () => setUnitView(b.dataset.uview);
 });
 
+
+/* ---------------- Initial Onboarding Walkthrough Steps ---------------- */
+const WT_STEPS = [
+  {
+    badge: "Step 1 of 4",
+    category: "Dubai SZR Twin",
+    title: "🏙️ Sheikh Zayed Road Digital Twin",
+    desc: "Experience Dubai's iconic corridor in real-time 3D. Use the camera presets (SZR Corridor, Highway Drive, Burj View) and toggle between ☀️ Day and 🌙 Night modes in the header.",
+    cam: "szr",
+    action: () => { setCameraView('szr'); }
+  },
+  {
+    badge: "Step 2 of 4",
+    category: "Landmarks",
+    title: "🏛️ Landmark Towers & Museum of the Future",
+    desc: "Explore signature skyscrapers along SZR and click the 3D Museum of the Future with its glowing Arabic calligraphy to view full architectural and historical details.",
+    cam: "motf",
+    action: () => { setCameraView('motf'); }
+  },
+  {
+    badge: "Step 3 of 4",
+    category: "Interior Walkthrough",
+    title: "🏠 2D Floor Plan to 3D Apartment Walkthrough",
+    desc: "Click any building (or use the portfolio list on the left) and launch our 3D Dollhouse Walkthrough to tour luxury 2BHK units with first-person walk and 2D mini-map radar.",
+    cam: "downtown",
+    action: () => {
+      setCameraView('downtown');
+      const bItem = document.querySelector('.bitem');
+      if (bItem) bItem.click();
+    }
+  },
+  {
+    badge: "Step 4 of 4",
+    category: "Compliance Suite",
+    title: "⚖️ Complete Dubai Regulatory & FinTech Suite",
+    desc: "Access the left tabs for DLD 5-Star Smart Index calculations, Decree 43/2013 rent checks, bilingual 90-day notices, RDSC eviction risk forecasting, and UAEDDS direct debits.",
+    cam: "szr",
+    action: () => {
+      const drawer = document.getElementById('drawer');
+      if (drawer) drawer.classList.remove('on');
+      const smartTab = document.querySelector('button[data-tab="smart"]');
+      if (smartTab) smartTab.click();
+    }
+  }
+];
+
+let curWtStep = 0;
+
+function showWalkthroughStep(index) {
+  curWtStep = index;
+  const s = WT_STEPS[index];
+  $('wtStepBadge').textContent = s.badge;
+  $('wtStepCategory').textContent = s.category;
+  $('wtTitle').textContent = s.title;
+  $('wtDesc').textContent = s.desc;
+  
+  // Update Dots
+  const dots = document.querySelectorAll('#wtDots .wt-dot');
+  dots.forEach((d, i) => d.classList.toggle('on', i === index));
+
+  // Update Buttons
+  $('btnWtPrev').style.display = (index > 0) ? 'inline-flex' : 'none';
+  $('btnWtNext').textContent = (index === WT_STEPS.length - 1) ? 'Get Started 🚀' : 'Next →';
+
+  // Execute Step Action
+  if (s.action) s.action();
+}
+
+function startWalkthrough() {
+  $('walkthroughModal').style.display = 'block';
+  showWalkthroughStep(0);
+}
+
+function closeWalkthrough() {
+  $('walkthroughModal').style.display = 'none';
+  try { localStorage.setItem('ejariflow_wt_seen', 'true'); } catch(e) {}
+}
+
+$('btnWtNext').onclick = () => {
+  if (curWtStep < WT_STEPS.length - 1) {
+    showWalkthroughStep(curWtStep + 1);
+  } else {
+    closeWalkthrough();
+  }
+};
+
+$('btnWtPrev').onclick = () => {
+  if (curWtStep > 0) showWalkthroughStep(curWtStep - 1);
+};
+
+$('btnSkipWalkthrough').onclick = closeWalkthrough;
+$('btnWtSkipText').onclick = closeWalkthrough;
+$('btnLaunchWalkthrough').onclick = startWalkthrough;
+
+// Trigger walkthrough on first visit (or when launched manually)
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    let seen = false;
+    try { seen = localStorage.getItem('ejariflow_wt_seen') === 'true'; } catch(e) {}
+    if (!seen) {
+      startWalkthrough();
+    }
+  }, 1200);
+});
+
 </script>
 
 <!-- 3D Unit Walkthrough Modal (Dollhouse Mode) -->
@@ -1885,6 +1996,35 @@ document.querySelectorAll('#unitViewSeg button').forEach(b => {
     <button onclick="jumpUnitRoom('bed')">🛏️ Master Suite</button>
     <button onclick="jumpUnitRoom('balcony')">🌆 Balcony View</button>
     <button onclick="jumpUnitRoom('kitchen')">🍳 Kitchen Island</button>
+  </div>
+</div>
+
+
+<!-- Interactive Onboarding Walkthrough Modal -->
+<div id="walkthroughModal" class="glass" style="display:none">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span class="chip" id="wtStepBadge" style="font-size:10.5px">Step 1 of 4</span>
+      <span style="font-size:12px;color:var(--gold);font-weight:600" id="wtStepCategory">Dubai SZR Twin</span>
+    </div>
+    <button id="btnSkipWalkthrough" aria-label="Close Tour" style="all:unset;cursor:pointer;color:var(--mute);font-size:18px;line-height:1;padding:2px 6px">✕</button>
+  </div>
+  
+  <h3 id="wtTitle" style="font:600 17px var(--display);margin:0 0 6px;color:var(--ink)">Welcome to EjariFlow AI</h3>
+  <p id="wtDesc" style="font-size:13px;line-height:1.55;color:var(--mute);margin:0 0 16px">Navigate Dubai's Sheikh Zayed Road digital twin. Switch between day & night, watch animated traffic and metro lines, and orbit 3D real estate towers.</p>
+  
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+    <button class="btn ghost" id="btnWtPrev" style="padding:6px 14px;font-size:12px;display:none">← Back</button>
+    <div style="display:flex;gap:4px" id="wtDots">
+      <span class="wt-dot on"></span>
+      <span class="wt-dot"></span>
+      <span class="wt-dot"></span>
+      <span class="wt-dot"></span>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn ghost" id="btnWtSkipText" style="padding:6px 12px;font-size:12px">Skip</button>
+      <button class="btn" id="btnWtNext" style="padding:6px 16px;font-size:12px">Next →</button>
+    </div>
   </div>
 </div>
 
