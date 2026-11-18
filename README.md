@@ -10,7 +10,7 @@
 
 EjariFlow AI reads Dubai tenancy contracts (English and Arabic), checks them against Dubai's rent laws, and shows a whole property portfolio as an interactive 3D map, so brokers, property managers and PropTech teams can spot non-compliant contracts and expiring leases before they become disputes.
 
-> **Status:** foundation release (v0.2). The rules engine, contract parser, audit, bilingual 90-day notice generator, API and 3D portfolio view work today with 23 automated tests. Scanned-document OCR and the AI extraction stage are next (see the [Roadmap](#-roadmap)).
+> **Status:** v1.0.0 Enterprise Release. Complete Dubai PropTech & LegalTech platform: DLD Smart Rental Index 5-star building classification, 2D Floor Plan to 3D Apartment Walkthrough (Dollhouse Mode), RDSC Legal Risk & Eviction Forecaster, UAE Direct Debit System (UAEDDS) engine, and Sheikh Zayed Road 3D Digital Twin with Day/Night toggle and Museum of the Future. 34 automated tests passing.
 
 ---
 
@@ -77,7 +77,39 @@ EjariFlow AI auto-generates formal, legally grounded renewal letters in parallel
 - Embeds the official RERA benchmark comparison and permitted cap percentage (Decree No. 43 of 2013).
 - Outputs printable, copy-ready legal notices ready to serve or submit before the Rental Disputes Centre (RDC).
 
-### 5. 🏙️ 3D portfolio view (Three.js)
+### 5. 🏙️ Sheikh Zayed Road 3D Digital Twin (Three.js)
+An authentic 3D spatial simulation of Dubai's iconic Sheikh Zayed Road corridor:
+- **Corridor Environment:** 10-lane highway with moving traffic streams (headlights/taillights), elevated Dubai Metro Red Line viaduct with moving train and golden cocoon station, over 90 streetlights on both sides, and 70+ animated walking pedestrians in Dubai attire.
+- **Dubai Landmarks:** Full 3D model of the **Museum of the Future** with glowing illuminated Arabic calligraphy, the towering **Burj Khalifa** (310m with pulsing summit strobe), and **Emirates Towers**.
+- **Day / Night Mode Toggle:** Smoothly switch between radiant Dubai daytime sunshine and vibrant illuminated Dubai night metropolis.
+- **Camera Presets:** SZR Corridor panoramic view, low-angle Highway Drive, Museum of the Future showcase, Burj View, and automated 45s Tour.
+
+### 6. 🏠 2D Floor Plan to 3D Apartment Walkthrough (Dollhouse Mode)
+Clicking any unit in the portfolio launches an interactive 3D luxury apartment interior walkthrough:
+- **Spatial Architecture:** 140 m² 2BHK layout with living lounge, master bedroom suite, modern kitchen island, marble bathroom, and panoramic balcony overlooking the Sheikh Zayed Road skyline.
+- **Three Camera Modes:** First-Person Walk (`WASD`), 3D Dollhouse cutaway view, and 2D Floor Plan top-down view.
+- **2D Mini-Map Radar:** Real-time canvas radar showing room boundaries and live user position.
+- **Room Jump Controls:** Instant smooth navigation between Living Lounge, Master Suite, Kitchen, and Balcony.
+
+### 7. ⭐ DLD Smart Rental Index & 5-Star Building Rating Calculator
+Implements the Dubai Land Department (DLD) Smart Rental Index scoring system:
+- **Technical Criteria:** Evaluates structural age, cooling infrastructure (chiller-free vs district cooling), amenities (pool, gym, 24/7 concierge, EV chargers), metro proximity, and LEED green certification.
+- **Building Classification:** Assigns 1★ to 5★ rating and applies building-specific benchmark multipliers (+15% for 5★ down to -20% for 1★).
+- **Star Upgrade Simulator:** Models how property capital improvements unlock higher legal RERA rental caps under Decree 43/2013.
+
+### 8. ⚖️ RDSC Legal Risk & Eviction Forecaster (Dubai Law 33/2008)
+Evaluates tenancy disputes and eviction notices before the Rental Dispute Settlement Centre:
+- **Statutory Grounds:** Sale of property (Art. 25(2)(d)), Owner personal use (Art. 25(2)(c)), Demolition (Art. 25(2)(a)), and Comprehensive renovation (Art. 25(2)(b)).
+- **Legal Validation:** Verifies the statutory **12-month notice period** and service through **Notary Public** or Registered Mail.
+- **Disqualification & Penalty Risks:** Flags owner alternative property disqualifiers and calculates landlord liability for Article 26 violations (2-year re-leasing ban; damages up to 1 full year's rent).
+
+### 9. 💳 UAE Direct Debit System (UAEDDS) & Installment Engine
+Implements the Central Bank of the UAE and DLD paperless rental mandate:
+- **Installment Generation:** Converts traditional 1, 2, 4, 6, or 12 cheque agreements into automated direct debit schedules.
+- **UAE IBAN Validation:** Validates 23-character `AE` format and identifies UAE clearing banks (Emirates NBD, FAB, DIB, ADCB, Mashreq, CBD).
+- **Statutory Protection:** Tracks 30-day default cure periods under Law 26/2007 (Art. 25(1)(a)) and calculates statutory security deposit escrow.
+
+### 10. 🔌 Local REST API
 An interactive 3D map of every building and unit:
 
 - **Colour = status:** lease > 6 months · ends in 3–6 months · ends in < 90 days (inside the renewal-notice window) · expired · **proposed rent over the RERA cap** · vacant.
@@ -87,11 +119,14 @@ An interactive 3D map of every building and unit:
 ### 6. 🔌 Local REST API
 | Method | Endpoint | Does |
 |---|---|---|
-| `POST` | `/api/rera/check` | Rent increase check `{current_rent, proposed_rent, average_rent}` |
+| `POST` | `/api/rera/check` | Decree 43/2013 rent increase check `{current_rent, proposed_rent, average_rent}` |
+| `POST` | `/api/rera/smart-index` | DLD 5-star building classification & upgrade simulator |
+| `POST` | `/api/rdsc/evaluate` | RDSC eviction legality & compensation liability forecaster |
+| `POST` | `/api/uaedds/schedule` | Central Bank UAEDDS direct debit schedule & IBAN validator |
 | `POST` | `/api/notice/generate` | Generates bilingual 90-day renewal notice (EN/AR) |
 | `POST` | `/api/contract/parse` | Contract text → fields `{text}` |
 | `POST` | `/api/contract/audit` | Parse + audit `{text, average_rent}` |
-| `GET` | `/api/portfolio` | Portfolio analysis for the 3D view |
+| `GET` | `/api/portfolio` | Full portfolio analysis for the 3D view |
 
 The server listens on `127.0.0.1` only and **refuses requests from other sites** (Host and Origin checks), so a web page you visit can't read your contracts through it.
 
