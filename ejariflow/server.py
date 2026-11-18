@@ -19,6 +19,9 @@ from .audit import audit_contract
 from .contract import parse_contract
 from .notice import generate_90day_notice
 from .portfolio import analyse, load_sample
+from .rdsc import forecast_eviction_case
+from .smart_index import evaluate_smart_index
+from .uaedds import generate_uaedds_schedule, validate_uae_iban
 
 WEB = pathlib.Path(__file__).resolve().parent.parent / "web"
 MAX_BODY = 2_000_000
@@ -62,6 +65,40 @@ def route(method: str, path: str, p: Dict[str, Any]) -> Tuple[int, Any]:
             cheques=int(p.get("cheques") or 4),
         )
         return 200, notice
+    if method == "POST" and path == "/api/rera/smart-index":
+        res = evaluate_smart_index(
+            building_name=str(p.get("building_name") or "Building"),
+            area=str(p.get("area") or "Dubai"),
+            base_area_average=_num(p, "base_area_average"),
+            current_unit_rent=_num(p, "current_unit_rent"),
+            proposed_unit_rent=_num(p, "proposed_unit_rent"),
+            specs=dict(p.get("specs") or {}),
+            proposed_upgrades=list(p.get("proposed_upgrades") or [])
+        )
+        return 200, res
+    if method == "POST" and path == "/api/rdsc/evaluate":
+        res = forecast_eviction_case(
+            ground=str(p.get("ground") or "personal_use"),
+            notice_date=str(p.get("notice_date") or dt.date.today().isoformat()),
+            target_eviction_date=str(p.get("target_eviction_date") or dt.date.today().isoformat()),
+            notice_method=str(p.get("notice_method") or "notary_public"),
+            landlord_owns_alternatives=bool(p.get("landlord_owns_alternatives")),
+            has_official_permits=bool(p.get("has_official_permits", True)),
+            current_annual_rent=_num(p, "current_annual_rent") if "current_annual_rent" in p else 100000.0
+        )
+        return 200, res
+    if method == "POST" and path == "/api/uaedds/schedule":
+        res = generate_uaedds_schedule(
+            annual_rent=_num(p, "annual_rent"),
+            lease_start=str(p.get("lease_start") or dt.date.today().isoformat()),
+            installments_count=int(p.get("installments_count") or 4),
+            tenant_name=str(p.get("tenant_name") or "Tenant"),
+            landlord_name=str(p.get("landlord_name") or "Landlord"),
+            tenant_iban=p.get("tenant_iban"),
+            property_name=str(p.get("property_name") or "Unit 101, Dubai"),
+            is_furnished=bool(p.get("is_furnished"))
+        )
+        return 200, res
     return 404, {"error": "Not found"}
 
 
