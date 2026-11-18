@@ -1,0 +1,24 @@
+TENANCY CONTRACT (SAMPLE - ALL DATA IS FICTIONAL)
+
+Ejari Contract No: 0012026000123456
+Date: 15/03/2026
+
+Owner / Lessor Name: Al Noor Properties LLC
+Tenant Name: Test Tenant One
+
+Property Details
+Building Name: Marina Crest Tower
+Unit No: 1204
+Property Type: Apartment (2 Bedroom)
+Area: Dubai Marina
+Plot No: 392-145
+
+Contract Period From: 01/04/2026 To: 31/03/2027
+Annual Rent: AED 85,000
+Security Deposit: AED 4,250
+Mode of Payment: 4 cheques
+
+SPECIAL CONDITIONS
+1. The rent shall increase by 10% on each renewal.
+2. The landlord may ask the tenant to vacate for own use with 60 days notice.
+3. Any change to the terms of renewal will be notified 30 days before expiry.
