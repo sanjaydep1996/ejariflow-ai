@@ -4,154 +4,451 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EjariFlow AI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
 <style>
-  :root { --bg:#0d1117; --panel:#151b24; --line:#263040; --ink:#e8edf5; --mute:#8b97a8; --gold:#e3b04b; --ok:#3fbf7f; --warn:#f2a33a; --due:#f07a3a; --bad:#e5484d; --cap:#c25cf0; --vac:#4b5566; }
+  :root {
+    --bg:#070b14; --glass:rgba(15,21,34,.72); --glass-2:rgba(22,30,46,.85); --line:rgba(148,163,184,.14); --line-2:rgba(148,163,184,.26);
+    --ink:#eef2f8; --mute:#93a0b5; --dim:#5d6a80; --gold:#e8b65a; --gold-2:#f6d28b;
+    --ok:#34d399; --warn:#fbbf24; --due:#fb923c; --bad:#f43f5e; --blue:#38bdf8; --vac:#334155;
+    --r:14px; --ui:"Inter", -apple-system, "Segoe UI", sans-serif; --display:"Space Grotesk", var(--ui); --mono:"JetBrains Mono", ui-monospace, monospace;
+  }
   * { box-sizing:border-box }
-  body { margin:0; background:var(--bg); color:var(--ink); font:14px/1.45 -apple-system, "Segoe UI", Inter, Arial, sans-serif; height:100vh; display:grid; grid-template-columns:380px 1fr; grid-template-rows:auto 1fr; }
-  header { grid-column:1/3; display:flex; align-items:center; gap:14px; padding:12px 20px; border-bottom:1px solid var(--line); }
-  header h1 { font-size:18px; margin:0; letter-spacing:.2px } header h1 b { color:var(--gold) }
-  header span { color:var(--mute); font-size:13px }
-  aside { overflow-y:auto; padding:16px; border-right:1px solid var(--line); display:flex; flex-direction:column; gap:14px }
-  .card { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:14px }
-  .card h2 { font-size:12px; letter-spacing:1.2px; text-transform:uppercase; color:var(--mute); margin:0 0 10px }
-  .kpis { display:grid; grid-template-columns:repeat(3,1fr); gap:8px }
-  .kpi b { display:block; font-size:20px } .kpi small { color:var(--mute); font-size:11px }
-  .legend { display:flex; flex-wrap:wrap; gap:6px 12px; font-size:12px; color:var(--mute) }
-  .legend i { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px }
-  label { display:block; font-size:12px; color:var(--mute); margin:8px 0 4px }
-  input, textarea { width:100%; background:#0f141b; color:var(--ink); border:1px solid var(--line); border-radius:8px; padding:8px 10px; font:inherit }
-  textarea { min-height:120px; resize:vertical; font:12px/1.5 ui-monospace, Menlo, monospace }
-  button { margin-top:10px; background:var(--gold); color:#1a1408; border:0; border-radius:8px; padding:9px 14px; font-weight:700; cursor:pointer }
-  button.ghost { background:transparent; color:var(--ink); border:1px solid var(--line) }
-  .row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px }
-  .out { margin-top:10px; font-size:13px } .out .ok { color:var(--ok) } .out .bad { color:var(--bad) }
-  .finding { border-left:3px solid var(--bad); padding:6px 10px; margin:6px 0; background:#1a1f28; border-radius:0 8px 8px 0 }
-  .finding.medium { border-color:var(--warn) } .finding.low { border-color:var(--vac) }
-  .finding small { color:var(--mute); display:block }
-  main { position:relative } canvas { display:block }
-  #tip { position:absolute; pointer-events:none; background:#0b0f15ee; border:1px solid var(--line); border-radius:8px; padding:8px 10px; font-size:12px; display:none; max-width:260px }
-  #note { position:absolute; left:16px; bottom:12px; color:var(--mute); font-size:11px }
-  @media (max-width: 900px) { body { grid-template-columns:1fr; grid-template-rows:auto auto 60vh } header { grid-column:1 } aside { border-right:0 } }
+  html, body { margin:0; height:100%; background:var(--bg); color:var(--ink); font:14px/1.5 var(--ui); overflow:hidden }
+  #scene { position:fixed; inset:0; background:radial-gradient(120% 80% at 70% 0%, #1b2440 0%, #0b1120 45%, #05080f 100%) }
+  #scene canvas { display:block }
+  .glass { background:var(--glass); backdrop-filter:blur(18px) saturate(140%); -webkit-backdrop-filter:blur(18px) saturate(140%); border:1px solid var(--line); border-radius:var(--r); box-shadow:0 20px 50px rgba(0,0,0,.35) }
+
+  /* top bar */
+  header { position:fixed; top:16px; left:16px; right:16px; height:60px; display:flex; align-items:center; gap:18px; padding:0 18px; z-index:5 }
+  .brand { display:flex; align-items:center; gap:11px }
+  .mark { width:34px; height:34px; border-radius:10px; background:linear-gradient(135deg, var(--gold-2), #b8792a); display:grid; place-items:center; box-shadow:0 0 24px rgba(232,182,90,.35) }
+  .brand h1 { font:600 18px var(--display); margin:0; letter-spacing:.2px } .brand h1 b { color:var(--gold) }
+  .brand small { display:block; color:var(--mute); font-size:11.5px; margin-top:-2px }
+  .chip { font:500 11px var(--mono); color:var(--gold-2); border:1px solid rgba(232,182,90,.35); padding:4px 9px; border-radius:999px; white-space:nowrap }
+  .seg { margin-left:auto; display:flex; gap:4px; padding:4px; border-radius:11px; background:rgba(255,255,255,.04); border:1px solid var(--line) }
+  .seg button { all:unset; cursor:pointer; padding:7px 13px; border-radius:8px; font-weight:500; font-size:13px; color:var(--mute); white-space:nowrap }
+  .seg button[aria-pressed="true"] { background:var(--glass-2); color:var(--ink); box-shadow:inset 0 0 0 1px var(--line-2) }
+  .seg button:focus-visible, .tabs button:focus-visible, .btn:focus-visible { outline:2px solid var(--gold); outline-offset:2px }
+
+  /* left panel */
+  aside { position:fixed; top:92px; left:16px; bottom:16px; width:380px; display:flex; flex-direction:column; z-index:4; overflow:hidden }
+  .tabs { display:flex; gap:2px; padding:8px 8px 0; border-bottom:1px solid var(--line) }
+  .tabs button { all:unset; cursor:pointer; padding:10px 12px 11px; font-weight:600; font-size:13px; color:var(--mute); border-bottom:2px solid transparent }
+  .tabs button[aria-selected="true"] { color:var(--ink); border-color:var(--gold) }
+  .pane { display:none; overflow-y:auto; padding:16px; gap:14px; flex-direction:column; flex:1 }
+  .pane.on { display:flex }
+  .pane::-webkit-scrollbar { width:8px } .pane::-webkit-scrollbar-thumb { background:rgba(148,163,184,.2); border-radius:8px }
+  .eyebrow { font:600 10.5px var(--ui); letter-spacing:1.4px; text-transform:uppercase; color:var(--dim); margin:0 0 8px }
+  .kpis { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+  .kpi { padding:13px 14px; border-radius:12px; background:rgba(255,255,255,.03); border:1px solid var(--line) }
+  .kpi b { display:block; font:600 24px/1.1 var(--display); letter-spacing:-.3px } .kpi small { color:var(--mute); font-size:12px }
+  .kpi.hero { grid-column:1/3; display:flex; align-items:flex-end; justify-content:space-between; background:linear-gradient(135deg, rgba(232,182,90,.14), rgba(232,182,90,.02)); border-color:rgba(232,182,90,.25) }
+  .kpi.hero b { font-size:32px; color:var(--gold-2) }
+  .kpi .tone-bad { color:var(--bad) } .kpi .tone-warn { color:var(--due) }
+  .stack { display:flex; height:10px; border-radius:6px; overflow:hidden; background:rgba(255,255,255,.05) }
+  .stack span { display:block; height:100% }
+  .stack-legend { display:grid; grid-template-columns:1fr 1fr; gap:4px 12px; margin-top:10px; font-size:12px; color:var(--mute) }
+  .stack-legend i, .legend i { display:inline-block; width:9px; height:9px; border-radius:3px; margin-right:7px }
+  .stack-legend b { color:var(--ink); font-weight:600; float:right }
+  .blist { display:flex; flex-direction:column; gap:8px }
+  .bitem { all:unset; cursor:pointer; display:grid; grid-template-columns:1fr auto; gap:2px 10px; padding:11px 13px; border-radius:11px; border:1px solid var(--line); background:rgba(255,255,255,.02); transition:.15s }
+  .bitem:hover, .bitem[aria-current="true"] { border-color:rgba(232,182,90,.45); background:rgba(232,182,90,.06) }
+  .bitem b { font-weight:600 } .bitem small { color:var(--mute); font-size:12px } .bitem .num { text-align:right; font:600 15px var(--display) }
+  .bar { grid-column:1/3; height:4px; border-radius:3px; background:rgba(255,255,255,.06); overflow:hidden; margin-top:6px } .bar span { display:block; height:100%; background:var(--gold) }
+
+  label { display:block; font-size:12px; color:var(--mute); margin:0 0 6px; font-weight:500 }
+  input, textarea { width:100%; background:rgba(5,8,15,.6); color:var(--ink); border:1px solid var(--line-2); border-radius:10px; padding:10px 12px; font:inherit; transition:border-color .15s }
+  input:focus, textarea:focus { outline:none; border-color:var(--gold) }
+  textarea { min-height:150px; resize:vertical; font:12px/1.55 var(--mono) }
+  .field { margin-bottom:12px } .grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:10px }
+  .btn { all:unset; cursor:pointer; display:inline-flex; align-items:center; gap:8px; padding:10px 16px; border-radius:10px; font-weight:600; font-size:13px; background:linear-gradient(135deg, var(--gold-2), var(--gold)); color:#1d1407; box-shadow:0 8px 24px rgba(232,182,90,.25) }
+  .btn.ghost { background:transparent; color:var(--ink); border:1px solid var(--line-2); box-shadow:none }
+  .btns { display:flex; gap:8px; flex-wrap:wrap }
+  .result { border-radius:12px; padding:14px; border:1px solid var(--line); background:rgba(255,255,255,.03) }
+  .verdict { display:flex; align-items:center; gap:10px; font:600 16px var(--display) }
+  .dot { width:10px; height:10px; border-radius:50%; flex:none } .ok .dot { background:var(--ok); box-shadow:0 0 12px var(--ok) } .bad .dot { background:var(--bad); box-shadow:0 0 12px var(--bad) }
+  .meter { position:relative; height:8px; border-radius:5px; background:rgba(255,255,255,.07); margin:14px 0 6px }
+  .meter span { position:absolute; top:0; bottom:0; left:0; border-radius:5px }
+  .meter i { position:absolute; top:-4px; width:2px; height:16px; background:var(--ink) }
+  .muted { color:var(--mute); font-size:12.5px }
+  .finding { border-left:3px solid var(--bad); padding:9px 12px; margin-top:8px; background:rgba(244,63,94,.06); border-radius:0 10px 10px 0; font-size:13px }
+  .finding.medium { border-color:var(--warn); background:rgba(251,191,36,.06) } .finding.low { border-color:var(--dim); background:rgba(255,255,255,.03) }
+  .finding small { display:block; color:var(--mute); margin-top:4px; font-size:11.5px }
+  .facts { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:12.5px; margin-top:8px } .facts dt { color:var(--mute) } .facts dd { margin:0 }
+
+  /* overlays */
+  .legend { position:fixed; left:412px; bottom:16px; padding:10px 14px; display:flex; gap:14px; flex-wrap:wrap; font-size:12px; color:var(--mute); z-index:3 }
+  #drawer { position:fixed; top:92px; right:16px; width:330px; max-height:calc(100% - 108px); overflow-y:auto; padding:18px; z-index:4; transform:translateX(calc(100% + 24px)); transition:transform .35s cubic-bezier(.2,.8,.2,1) }
+  #drawer.on { transform:none }
+  #drawer h2 { font:600 20px var(--display); margin:0 } #drawer .x { all:unset; cursor:pointer; float:right; color:var(--mute); font-size:20px; line-height:1 }
+  .mini { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:14px 0 } .mini div { padding:10px; border-radius:10px; background:rgba(255,255,255,.03); border:1px solid var(--line) }
+  .mini b { display:block; font:600 18px var(--display) } .mini small { color:var(--mute); font-size:11px }
+  .risk { display:flex; justify-content:space-between; gap:10px; padding:9px 0; border-bottom:1px solid var(--line); font-size:13px; cursor:pointer } .risk:last-child { border:0 }
+  .tag { font:600 10.5px var(--mono); padding:3px 7px; border-radius:6px; white-space:nowrap }
+  #tip { position:fixed; pointer-events:none; z-index:6; padding:10px 12px; font-size:12.5px; display:none; min-width:200px }
+  #tip b { font-family:var(--display) }
+  .hint { position:fixed; right:16px; bottom:16px; padding:8px 12px; font-size:11.5px; color:var(--mute); z-index:3 }
+  #loading { position:fixed; inset:0; display:grid; place-items:center; z-index:10; background:var(--bg); font:500 14px var(--display); color:var(--mute); transition:opacity .6s }
+  @media (max-width: 1100px) { .legend, .hint { display:none } #drawer { width:300px } }
+  @media (max-width: 760px) {
+    header { height:auto; flex-wrap:wrap; padding:10px 14px; gap:10px } .seg { margin-left:0; width:100%; overflow-x:auto } .chip { display:none }
+    aside { top:auto; left:8px; right:8px; width:auto; height:52vh; bottom:8px } #drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:52vh }
+  }
+  @media (prefers-reduced-motion: reduce) { #drawer { transition:none } }
 </style>
 </head>
 <body>
-<header><h1>Ejari<b>Flow</b> AI</h1><span>Dubai tenancy contracts, RERA rent caps and portfolio compliance</span></header>
-<aside>
-  <section class="card"><h2>Portfolio</h2><div class="kpis" id="kpis"></div></section>
-  <section class="card"><h2>Legend</h2><div class="legend">
-    <span><i style="background:var(--ok)"></i>Lease &gt; 6 months</span><span><i style="background:var(--warn)"></i>Ends in 3–6 months</span>
-    <span><i style="background:var(--due)"></i>Ends in &lt; 90 days</span><span><i style="background:var(--bad)"></i>Expired</span>
-    <span><i style="background:var(--cap)"></i>Proposed rent over RERA cap</span><span><i style="background:var(--vac)"></i>Vacant</span></div></section>
-  <section class="card"><h2>RERA rent increase check</h2>
-    <div class="row">
-      <div><label for="cur">Current rent</label><input id="cur" type="number" value="80000"></div>
-      <div><label for="prop">Proposed</label><input id="prop" type="number" value="90000"></div>
-      <div><label for="avg">Area average</label><input id="avg" type="number" value="100000"></div>
-    </div>
-    <button id="check">Check increase</button><div class="out" id="checkOut"></div>
+<div id="loading">Loading the portfolio…</div>
+<div id="scene"></div>
+
+<header class="glass">
+  <div class="brand">
+    <div class="mark" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d1407" stroke-width="2.4" stroke-linecap="round"><path d="M4 21V9l5-4v16M9 21V3l6 4v14M15 21v-9l5 3v6M2 21h20"/></svg></div>
+    <div><h1>Ejari<b>Flow</b> AI</h1><small>Dubai tenancy compliance</small></div>
+  </div>
+  <span class="chip" id="asof">Sample portfolio</span>
+  <div class="seg" role="group" aria-label="Colour units by">
+    <button data-mode="expiry" aria-pressed="true">Lease expiry</button>
+    <button data-mode="rera" aria-pressed="false">RERA compliance</button>
+    <button data-mode="occupancy" aria-pressed="false">Occupancy</button>
+  </div>
+</header>
+
+<aside class="glass">
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
+    <button role="tab" aria-selected="false" data-tab="rent">Rent check</button>
+    <button role="tab" aria-selected="false" data-tab="audit">Contract audit</button>
+  </div>
+
+  <section class="pane on" id="pane-overview" role="tabpanel">
+    <div><p class="eyebrow">Portfolio</p><div class="kpis" id="kpis"></div></div>
+    <div><p class="eyebrow">Lease status</p><div class="stack" id="stack"></div><div class="stack-legend" id="stackLegend"></div></div>
+    <div><p class="eyebrow">Buildings</p><div class="blist" id="blist"></div></div>
+    <p class="muted" id="note"></p>
   </section>
-  <section class="card"><h2>Contract audit</h2>
-    <label for="text">Paste tenancy contract text (English or Arabic)</label><textarea id="text"></textarea>
-    <label for="avg2">Average rent for similar units (from the RERA index)</label><input id="avg2" type="number" value="100000">
-    <button id="audit">Audit contract</button> <button class="ghost" id="sample">Load sample</button>
-    <div class="out" id="auditOut"></div>
+
+  <section class="pane" id="pane-rent" role="tabpanel">
+    <div><p class="eyebrow">RERA rent increase check</p>
+      <p class="muted" style="margin:0 0 12px">Dubai Decree No. 43 of 2013 caps a renewal increase by how far the rent is below the area average in the RERA rental index.</p></div>
+    <div class="grid3">
+      <div class="field"><label for="cur">Current rent</label><input id="cur" type="number" inputmode="numeric" value="80000"></div>
+      <div class="field"><label for="prop">Proposed</label><input id="prop" type="number" inputmode="numeric" value="90000"></div>
+      <div class="field"><label for="avg">Area average</label><input id="avg" type="number" inputmode="numeric" value="100000"></div>
+    </div>
+    <div class="btns"><button class="btn" id="check">Check increase</button></div>
+    <div id="checkOut"></div>
+    <div class="result"><p class="eyebrow" style="margin-bottom:6px">The five bands</p>
+      <dl class="facts"><dt>≤ 10% below average</dt><dd>no increase</dd><dt>11–20% below</dt><dd>up to 5%</dd><dt>21–30% below</dt><dd>up to 10%</dd><dt>31–40% below</dt><dd>up to 15%</dd><dt>&gt; 40% below</dt><dd>up to 20%</dd></dl></div>
+  </section>
+
+  <section class="pane" id="pane-audit" role="tabpanel">
+    <div class="field"><label for="text">Tenancy contract text (English or Arabic)</label><textarea id="text" placeholder="Paste the contract text, or load the sample…"></textarea></div>
+    <div class="field"><label for="avg2">Area average rent from the RERA index (AED / year)</label><input id="avg2" type="number" inputmode="numeric" value="100000"></div>
+    <div class="btns"><button class="btn" id="audit">Audit contract</button><button class="btn ghost" id="sample">Load sample</button></div>
+    <div id="auditOut"></div>
   </section>
 </aside>
-<main id="stage"><div id="tip"></div><div id="note"></div></main>
+
+<div class="legend glass" id="legend"></div>
+<div class="hint glass">Drag to orbit · scroll to zoom · click a building</div>
+<div id="drawer" class="glass" aria-live="polite"></div>
+<div id="tip" class="glass"></div>
 
 <script type="importmap">{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }</script>
 <script type="module">
 import * as THREE from "three";
 import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
+import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
+import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
+import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 
+const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-const aed = n => "AED " + Number(n).toLocaleString("en-AE");
+const aed = n => "AED " + Math.round(Number(n)).toLocaleString("en-US");
 const post = (url, body) => fetch(url, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(r => r.json());
-const COLORS = { later: 0x3fbf7f, due_180: 0xf2a33a, due_90: 0xf07a3a, expired: 0xe5484d, over_cap: 0xc25cf0, vacant: 0x4b5566 };
+const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// ----- RERA check -----
-document.getElementById("check").onclick = async () => {
-  const r = await post("/api/rera/check", { current_rent: cur.value, proposed_rent: prop.value, average_rent: avg.value });
-  document.getElementById("checkOut").innerHTML = r.error ? `<span class="bad">${esc(r.error)}</span>` :
-    `<b class="${r.compliant ? "ok" : "bad"}">${r.compliant ? "Within the cap" : "Over the cap"}</b><br>${esc(r.reason)}<br><small>Max rent: ${aed(r.max_rent)} · ${esc(r.rule)}</small>`;
+/* ---------------- colour modes ---------------- */
+const PALETTE = { later: "#34d399", due_180: "#fbbf24", due_90: "#fb923c", expired: "#f43f5e", vacant: "#1e293b", compliant: "#38bdf8", over_cap: "#f43f5e", occupied: "#ffd59a" };
+const MODES = {
+  expiry: { legend: [["later", "Lease > 6 months"], ["due_180", "Ends in 3–6 months"], ["due_90", "Ends in < 90 days"], ["expired", "Expired"], ["vacant", "Vacant"]],
+            key: u => !u.occupied ? "vacant" : u.expiry },
+  rera: { legend: [["compliant", "Proposed rent within cap"], ["over_cap", "Over the RERA cap"], ["vacant", "Vacant"]],
+          key: u => !u.occupied ? "vacant" : (u.rent_check && !u.rent_check.compliant ? "over_cap" : "compliant") },
+  occupancy: { legend: [["occupied", "Occupied"], ["vacant", "Vacant"]], key: u => u.occupied ? "occupied" : "vacant" },
 };
+let mode = "expiry";
 
-// ----- Contract audit -----
-document.getElementById("sample").onclick = async () => { text.value = await fetch("/sample-contract.txt").then(r => r.ok ? r.text() : ""); };
-document.getElementById("audit").onclick = async () => {
-  const r = await post("/api/contract/audit", { text: text.value, average_rent: avg2.value });
-  const box = document.getElementById("auditOut");
-  if (r.error) { box.innerHTML = `<span class="bad">${esc(r.error)}</span>`; return; }
-  const c = r.contract, a = r.audit;
-  box.innerHTML = `<div><b>${esc(c.property.building || "Unknown building")}</b> unit ${esc(c.property.unit || "?")} · ${c.annual_rent ? aed(c.annual_rent) : "rent not found"} · Ejari ${esc(c.ejari_number || "not found")}</div>
-    <div style="margin-top:6px"><b class="${a.compliant ? "ok" : "bad"}">${a.compliant ? "No problems found" : a.findings.length + " finding(s)"}</b></div>
-    ${a.findings.map(f => `<div class="finding ${f.severity}">${esc(f.message)}<small>${f.clause ? "Clause " + f.clause + " · " : ""}${esc(f.rule)}</small></div>`).join("")}
-    ${a.unchecked.length ? `<small style="color:var(--mute)">${a.unchecked.map(esc).join("<br>")}</small>` : ""}
-    <small style="color:var(--mute);display:block;margin-top:6px">${esc(a.disclaimer)}</small>`;
-};
-
-// ----- 3D portfolio -----
-const stage = document.getElementById("stage"), tip = document.getElementById("tip");
-const renderer = new THREE.WebGLRenderer({ antialias: true });
+/* ---------------- scene ---------------- */
+const host = $("scene");
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
-stage.appendChild(renderer.domElement);
-const scene = new THREE.Scene(); scene.background = new THREE.Color(0x0d1117);
-scene.fog = new THREE.Fog(0x0d1117, 120, 260);
-const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000); camera.position.set(70, 70, 90);
-const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.target.set(0, 12, 0);
-scene.add(new THREE.HemisphereLight(0xdfe8ff, 0x20242c, 1.1));
-const sun = new THREE.DirectionalLight(0xffe2b0, 1.4); sun.position.set(60, 100, 40); scene.add(sun);
-const ground = new THREE.Mesh(new THREE.PlaneGeometry(400, 400), new THREE.MeshStandardMaterial({ color: 0x1a1f27 }));
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+host.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x070b14, 0.0042);
+const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 2000);
+camera.position.set(150, 105, 190);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true; controls.dampingFactor = 0.06; controls.maxPolarAngle = Math.PI * 0.47; controls.minDistance = 40; controls.maxDistance = 420;
+controls.target.set(0, 30, 0); controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.35;
+controls.addEventListener("start", () => { controls.autoRotate = false; });
+
+scene.add(new THREE.HemisphereLight(0x8fb3ff, 0x0b0f18, 0.55));
+const moon = new THREE.DirectionalLight(0xbcd4ff, 0.9); moon.position.set(-120, 200, 80); scene.add(moon);
+const warm = new THREE.PointLight(0xffb15c, 2200, 260, 1.6); warm.position.set(0, 18, 60); scene.add(warm);
+
+// ground, roads and water
+const ground = new THREE.Mesh(new THREE.CircleGeometry(700, 64), new THREE.MeshStandardMaterial({ color: 0x0a0f1a, roughness: 0.95 }));
 ground.rotation.x = -Math.PI / 2; scene.add(ground);
+const water = new THREE.Mesh(new THREE.PlaneGeometry(520, 70), new THREE.MeshStandardMaterial({ color: 0x0b2236, metalness: 0.8, roughness: 0.18, emissive: 0x06131f }));
+water.rotation.x = -Math.PI / 2; water.position.set(0, 0.05, 95); scene.add(water);
+const roadMat = new THREE.MeshBasicMaterial({ color: 0x1b2433 });
+for (const [w, h, x, z] of [[520, 7, 0, 46], [520, 5, 0, -48], [6, 200, -105, 0], [6, 200, 105, 0], [6, 200, 0, 0]]) {
+  const r = new THREE.Mesh(new THREE.PlaneGeometry(w, h), roadMat); r.rotation.x = -Math.PI / 2; r.position.set(x, 0.04, z); scene.add(r);
+}
+// street-light dots along the main road
+const lampGeo = new THREE.SphereGeometry(0.45, 8, 8), lampMat = new THREE.MeshBasicMaterial({ color: 0xffc27a });
+for (let x = -250; x <= 250; x += 9) for (const z of [42, 50]) { const l = new THREE.Mesh(lampGeo, lampMat); l.position.set(x, 1.2, z); scene.add(l); }
 
-const pickables = [];
-function label(text) {
-  const c = document.createElement("canvas"); c.width = 512; c.height = 96;
-  const g = c.getContext("2d"); g.fillStyle = "#e8edf5"; g.font = "600 40px -apple-system, Arial"; g.textAlign = "center"; g.fillText(text, 256, 60);
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(c), transparent: true })); s.scale.set(24, 4.5, 1); return s;
+// stars
+{ const g = new THREE.BufferGeometry(), n = 1400, p = new Float32Array(n * 3);
+  for (let i = 0; i < n; i++) { const t = Math.random() * Math.PI * 2, f = Math.random() * 0.45, r = 900;
+    p[i*3] = r * Math.cos(t) * Math.cos(f); p[i*3+1] = 60 + r * Math.sin(f); p[i*3+2] = r * Math.sin(t) * Math.cos(f); }
+  g.setAttribute("position", new THREE.BufferAttribute(p, 3));
+  scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xc9d6ff, size: 1.6, sizeAttenuation: false, transparent: true, opacity: .7, fog: false }))); }
+
+// distant skyline (context, not data)
+{ const geo = new THREE.BoxGeometry(1, 1, 1), mat = new THREE.MeshStandardMaterial({ color: 0x0d1424, emissive: 0x111a2e, roughness: .8 });
+  const n = 160, mesh = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(); let k = 0;
+  for (let i = 0; i < n; i++) {
+    const a = (i / n) * Math.PI * 2 + Math.random() * .03, d = 300 + Math.random() * 160, h = 15 + Math.pow(Math.random(), 2) * 110, w = 8 + Math.random() * 14;
+    m.compose(new THREE.Vector3(Math.cos(a) * d, h / 2, Math.sin(a) * d), new THREE.Quaternion(), new THREE.Vector3(w, h, w)); mesh.setMatrixAt(k++, m);
+  }
+  scene.add(mesh);
+  // a landmark spire on the horizon
+  const spire = new THREE.Group(), sm = new THREE.MeshStandardMaterial({ color: 0x9fb4d8, metalness: .8, roughness: .3, emissive: 0x1e2a44 });
+  [[16, 120], [12, 90], [8, 70], [5, 60], [2.4, 70]].reduce((y, [w, h]) => { const b = new THREE.Mesh(new THREE.CylinderGeometry(w * .7, w, h, 6), sm); b.position.y = y + h / 2; spire.add(b); return y + h; }, 0);
+  const tipLight = new THREE.Mesh(new THREE.SphereGeometry(1.6), new THREE.MeshBasicMaterial({ color: 0xff4d4d })); tipLight.position.y = 412; spire.add(tipLight);
+  spire.position.set(-260, 0, -380); scene.add(spire); spire.userData.tip = tipLight; scene.userData.spire = spire;
 }
 
-function build(data) {
-  const t = data.totals;
-  document.getElementById("kpis").innerHTML = [
-    [t.units, "units"], [t.occupancy_percent + "%", "occupied"], ["AED " + (t.annual_rent / 1e6).toFixed(1) + "M", "annual rent"],
-    [t.due_90, "end < 90 days"], [t.expired, "expired"], [t.over_cap, "over RERA cap"]].map(([v, l]) => `<div class="kpi"><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
-  document.getElementById("note").textContent = data.note;
-  const spacing = 34, n = data.buildings.length;
-  data.buildings.forEach((b, i) => {
-    const x0 = (i - (n - 1) / 2) * spacing, w = b.units_per_floor * 2.2;
-    const group = new THREE.Group(); group.position.set(x0, 0, 0); scene.add(group);
-    const base = new THREE.Mesh(new THREE.BoxGeometry(w + 2, 0.6, 6), new THREE.MeshStandardMaterial({ color: 0x2a313d })); base.position.y = 0.3; group.add(base);
-    b.units.forEach(u => {
-      const m = new THREE.Mesh(new THREE.BoxGeometry(2, 2, 3.6), new THREE.MeshStandardMaterial({ color: COLORS[u.status] || 0x888888, roughness: .6, emissive: COLORS[u.status] || 0, emissiveIntensity: .08 }));
-      m.position.set(-w / 2 + (u.index - 0.5) * 2.2, 0.6 + (u.floor - 0.5) * 2.2, 0);
-      m.userData = { building: b, unit: u }; group.add(m); pickables.push(m);
-    });
-    const l = label(b.name); l.position.set(0, 0.6 + b.floors * 2.2 + 4, 0); group.add(l);
-  });
+/* ---------------- buildings ---------------- */
+const windows = [], bodies = [], groups = {};
+const glass = new THREE.MeshStandardMaterial({ color: 0x14203a, metalness: 0.85, roughness: 0.22, emissive: 0x0a1222 });
+const frame = new THREE.MeshStandardMaterial({ color: 0x2b3850, metalness: 0.6, roughness: 0.45 });
+const FLOOR_H = 3.2, UNIT_W = 4.2, DEPTH = 15;
+const winGeo = new THREE.PlaneGeometry(UNIT_W * 0.78, FLOOR_H * 0.62);
+
+function labelSprite(text, sub) {
+  const c = document.createElement("canvas"); c.width = 640; c.height = 170; const g = c.getContext("2d");
+  g.fillStyle = "rgba(10,15,26,.82)"; g.strokeStyle = "rgba(232,182,90,.55)"; g.lineWidth = 3;
+  g.beginPath(); g.roundRect(6, 6, 628, 158, 34); g.fill(); g.stroke();
+  g.fillStyle = "#eef2f8"; g.font = "600 52px 'Space Grotesk', Arial"; g.textAlign = "center"; g.fillText(text, 320, 78);
+  g.fillStyle = "#f6d28b"; g.font = "500 34px 'Inter', Arial"; g.fillText(sub, 320, 130);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); s.scale.set(34, 9, 1); s.renderOrder = 10; return s;
 }
 
-const ray = new THREE.Raycaster(), mouse = new THREE.Vector2();
-renderer.domElement.addEventListener("pointermove", e => {
+function addBuilding(b, x, z) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); groups[b.id] = g;
+  const W = b.units_per_floor * UNIT_W + 1.6, H = b.floors * FLOOR_H;
+  // podium
+  const pod = new THREE.Mesh(new THREE.BoxGeometry(W + 10, 4, DEPTH + 10), frame); pod.position.y = 2; g.add(pod);
+  const podGlow = new THREE.Mesh(new THREE.BoxGeometry(W + 10.2, 0.35, DEPTH + 10.2), new THREE.MeshBasicMaterial({ color: 0xe8b65a })); podGlow.position.y = 3.6; g.add(podGlow);
+  // body
+  const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, DEPTH), glass); body.position.y = 4 + H / 2; body.userData.building = b; g.add(body); bodies.push(body);
+  // floor slabs
+  const slab = new THREE.BoxGeometry(W + 0.5, 0.28, DEPTH + 0.5);
+  for (let f = 0; f <= b.floors; f += (b.floors > 20 ? 2 : 1)) { const s = new THREE.Mesh(slab, frame); s.position.y = 4 + f * FLOOR_H; g.add(s); }
+  // vertical fins
+  const fin = new THREE.BoxGeometry(0.35, H, 0.6);
+  for (let i = 0; i <= b.units_per_floor; i++) for (const zz of [DEPTH / 2 + .2, -DEPTH / 2 - .2]) {
+    const f = new THREE.Mesh(fin, frame); f.position.set(-W / 2 + 0.8 + i * UNIT_W, 4 + H / 2, zz); g.add(f); }
+  // crown
+  let top = 4 + H;
+  if (b.style === "spire") {
+    const c1 = new THREE.Mesh(new THREE.BoxGeometry(W * .7, 8, DEPTH * .7), glass); c1.position.y = top + 4; g.add(c1);
+    const sp = new THREE.Mesh(new THREE.CylinderGeometry(.25, .9, 30, 8), frame); sp.position.y = top + 8 + 15; g.add(sp);
+    const beacon = new THREE.Mesh(new THREE.SphereGeometry(.9), new THREE.MeshBasicMaterial({ color: 0xff4d4d })); beacon.position.y = top + 38.5; g.add(beacon); g.userData.beacon = beacon;
+    top += 40;
+  } else {
+    const crown = new THREE.Mesh(new THREE.BoxGeometry(W + .6, 1.2, DEPTH + .6), new THREE.MeshBasicMaterial({ color: b.style === "twin" ? 0x38bdf8 : 0xe8b65a })); crown.position.y = top + 0.6; g.add(crown);
+    top += 2;
+  }
+  // unit windows (front and back), coloured by the active mode
+  for (const u of b.units) {
+    for (const side of [1, -1]) {
+      const m = new THREE.Mesh(winGeo, new THREE.MeshBasicMaterial({ color: 0xffffff, toneMapped: false }));
+      m.position.set(-W / 2 + 0.8 + (u.index - 0.5) * UNIT_W, 4 + (u.floor - 0.5) * FLOOR_H, side * (DEPTH / 2 + 0.06));
+      if (side < 0) m.rotation.y = Math.PI;
+      m.userData = { building: b, unit: u }; g.add(m); windows.push(m);
+    }
+  }
+  const occ = b.units.filter(u => u.occupied).length;
+  const lbl = labelSprite(b.name, `${Math.round(occ / b.units.length * 100)}% occupied · ${b.units.length} units`); lbl.position.y = top + 9; g.add(lbl);
+  g.userData = { building: b, height: top };
+}
+
+function paint() {
+  for (const w of windows) {
+    const key = MODES[mode].key(w.userData.unit);
+    const c = new THREE.Color(PALETTE[key]);
+    const isVacant = key === "vacant";
+    w.material.color.copy(c).multiplyScalar(isVacant ? 0.55 : (w === hovered ? 2.4 : 1.25));
+  }
+  $("legend").innerHTML = MODES[mode].legend.map(([k, l]) => `<span><i style="background:${PALETTE[k]}"></i>${esc(l)}</span>`).join("");
+}
+
+/* ---------------- post-processing ---------------- */
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.75, 0.55, 0.62); composer.addPass(bloom);
+composer.addPass(new OutputPass());
+
+/* ---------------- interaction ---------------- */
+const ray = new THREE.Raycaster(), mouse = new THREE.Vector2(), tip = $("tip");
+let hovered = null, flight = null;
+function pick(e) {
   const r = renderer.domElement.getBoundingClientRect();
   mouse.set(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1);
   ray.setFromCamera(mouse, camera);
-  const hit = ray.intersectObjects(pickables)[0];
-  if (!hit) { tip.style.display = "none"; return; }
-  const { building: b, unit: u } = hit.object.userData;
-  tip.innerHTML = `<b>${esc(b.name)} · Unit ${esc(u.unit)}</b><br>${esc(b.area)}<br>` + (u.occupied ?
-    `Rent ${aed(u.annual_rent)} · ends ${esc(u.lease_end)} (${u.days_to_expiry} days)` + (u.rent_check ? `<br>Proposed ${u.rent_check.proposed_percent}% · cap ${u.rent_check.max_percent}% ${u.rent_check.compliant ? "✓" : "✗"}` : "") : "Vacant");
-  tip.style.display = "block"; tip.style.left = (e.clientX - r.left + 14) + "px"; tip.style.top = (e.clientY - r.top + 14) + "px";
+  return ray.intersectObjects([...windows, ...bodies], false)[0];
+}
+renderer.domElement.addEventListener("pointermove", e => {
+  const hit = pick(e), w = hit && hit.object.userData.unit ? hit.object : null;
+  if (w !== hovered) { hovered = w; paint(); renderer.domElement.style.cursor = hit ? "pointer" : "grab"; }
+  if (!w) { tip.style.display = "none"; return; }
+  const { building: b, unit: u } = w.userData;
+  const rc = u.rent_check;
+  tip.innerHTML = `<b>${esc(b.name)} · ${esc(u.unit)}</b><div class="muted">${esc(b.area)} · floor ${u.floor}</div>` + (u.occupied ?
+    `<dl class="facts"><dt>Rent</dt><dd>${aed(u.annual_rent)}</dd><dt>Lease ends</dt><dd>${esc(u.lease_end)} (${u.days_to_expiry < 0 ? Math.abs(u.days_to_expiry) + " days ago" : u.days_to_expiry + " days"})</dd>` +
+    (rc ? `<dt>Proposed</dt><dd>+${rc.proposed_percent}% <span style="color:${rc.compliant ? "var(--ok)" : "var(--bad)"}">(${rc.compliant ? "within" : "over"} ${rc.max_percent}% cap)</span></dd>` : "") + `</dl>` : `<div style="margin-top:6px">Vacant</div>`);
+  tip.style.display = "block";
+  const x = Math.min(e.clientX + 16, innerWidth - tip.offsetWidth - 10), y = Math.min(e.clientY + 16, innerHeight - tip.offsetHeight - 10);
+  tip.style.left = x + "px"; tip.style.top = y + "px";
+});
+renderer.domElement.addEventListener("pointerleave", () => { tip.style.display = "none"; hovered = null; paint(); });
+let down = null;
+renderer.domElement.addEventListener("pointerdown", e => { down = [e.clientX, e.clientY]; });
+renderer.domElement.addEventListener("pointerup", e => {
+  if (!down || Math.hypot(e.clientX - down[0], e.clientY - down[1]) > 5) return;
+  const hit = pick(e); if (hit) select(hit.object.userData.building.id);
 });
 
+function flyTo(id) {
+  const g = groups[id]; if (!g) return;
+  const h = g.userData.height, target = new THREE.Vector3(g.position.x, h * 0.45, g.position.z);
+  const dir = camera.position.clone().sub(controls.target).normalize(), dist = Math.max(70, h * 1.35);
+  flight = { t: 0, fromPos: camera.position.clone(), toPos: target.clone().add(dir.multiplyScalar(dist)), fromT: controls.target.clone(), toT: target };
+  controls.autoRotate = false;
+}
+
+let DATA = null, selected = null;
+function select(id) {
+  selected = id; flyTo(id);
+  document.querySelectorAll(".bitem").forEach(el => el.setAttribute("aria-current", String(el.dataset.id === id)));
+  const b = DATA.buildings.find(x => x.id === id), occ = b.units.filter(u => u.occupied);
+  const rent = occ.reduce((s, u) => s + u.annual_rent, 0);
+  const over = occ.filter(u => u.rent_check && !u.rent_check.compliant), soon = occ.filter(u => u.days_to_expiry <= 90).sort((a, c) => a.days_to_expiry - c.days_to_expiry);
+  const row = (u, tag, color) => `<div class="risk"><span>Unit <b>${esc(u.unit)}</b> · ${aed(u.annual_rent)}</span><span class="tag" style="color:${color};background:${color}1f">${esc(tag)}</span></div>`;
+  $("drawer").innerHTML = `<button class="x" aria-label="Close" onclick="document.getElementById('drawer').classList.remove('on')">×</button>
+    <p class="eyebrow">${esc(b.area)}</p><h2>${esc(b.name)}</h2>
+    <div class="mini"><div><b>${Math.round(occ.length / b.units.length * 100)}%</b><small>occupied</small></div><div><b>${(rent / 1e6).toFixed(1)}M</b><small>AED / year</small></div><div><b>${aed(b.avg_rent).replace("AED ", "")}</b><small>area average</small></div></div>
+    <p class="eyebrow">Over the RERA cap · ${over.length}</p>${over.slice(0, 6).map(u => row(u, `+${u.rent_check.proposed_percent}% / ${u.rent_check.max_percent}%`, "#f43f5e")).join("") || '<p class="muted">None.</p>'}
+    <p class="eyebrow" style="margin-top:14px">Ending within 90 days · ${soon.length}</p>${soon.slice(0, 6).map(u => row(u, u.days_to_expiry < 0 ? "expired" : u.days_to_expiry + " days", u.days_to_expiry < 0 ? "#f43f5e" : "#fb923c")).join("") || '<p class="muted">None.</p>'}
+    <p class="muted" style="margin-top:12px">Renewal changes need 90 days' notice (Law 26/2007).</p>`;
+  $("drawer").classList.add("on");
+}
+
+/* ---------------- panels ---------------- */
+function overview(d) {
+  const t = d.totals;
+  $("asof").textContent = `Sample portfolio · ${d.today}`;
+  $("kpis").innerHTML = `
+    <div class="kpi hero"><div><small>Annual rent roll</small><b>AED ${(t.annual_rent / 1e6).toFixed(1)}M</b></div><small>${t.units} units · ${d.buildings.length} buildings</small></div>
+    <div class="kpi"><b>${t.occupancy_percent}%</b><small>occupied</small></div>
+    <div class="kpi"><b class="tone-warn">${t.due_90}</b><small>leases end in 90 days</small></div>
+    <div class="kpi"><b class="tone-bad">${t.over_cap}</b><small>proposals over RERA cap</small></div>
+    <div class="kpi"><b class="tone-bad">${t.expired}</b><small>expired, not renewed</small></div>`;
+  const parts = [["later", t.occupied - t.due_90 - t.due_180 - t.expired, "Over 6 months"], ["due_180", t.due_180, "3–6 months"], ["due_90", t.due_90, "Under 90 days"], ["expired", t.expired, "Expired"], ["vacant", t.vacant, "Vacant"]];
+  $("stack").innerHTML = parts.map(([k, n]) => `<span style="width:${n / t.units * 100}%;background:${k === "vacant" ? "#334155" : PALETTE[k]}"></span>`).join("");
+  $("stackLegend").innerHTML = parts.map(([k, n, l]) => `<span><i style="background:${k === "vacant" ? "#334155" : PALETTE[k]}"></i>${l}<b>${n}</b></span>`).join("");
+  $("blist").innerHTML = d.buildings.map(b => {
+    const occ = b.units.filter(u => u.occupied).length, pct = Math.round(occ / b.units.length * 100);
+    const flags = b.units.filter(u => u.rent_check && !u.rent_check.compliant).length + b.units.filter(u => u.occupied && u.days_to_expiry <= 90).length;
+    return `<button class="bitem" data-id="${esc(b.id)}"><b>${esc(b.name)}</b><span class="num">${pct}%</span><small>${esc(b.area)} · ${b.floors} floors</small><small style="text-align:right;color:${flags ? "var(--due)" : "var(--mute)"}">${flags} to act on</small><span class="bar"><span style="width:${pct}%"></span></span></button>`;
+  }).join("");
+  document.querySelectorAll(".bitem").forEach(el => el.onclick = () => select(el.dataset.id));
+  $("note").textContent = d.note;
+}
+
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", String(x === b)));
+  document.querySelectorAll(".pane").forEach(p => p.classList.toggle("on", p.id === "pane-" + b.dataset.tab));
+});
+document.querySelectorAll(".seg button").forEach(b => b.onclick = () => {
+  mode = b.dataset.mode; document.querySelectorAll(".seg button").forEach(x => x.setAttribute("aria-pressed", String(x === b))); paint();
+});
+
+$("check").onclick = async () => {
+  const r = await post("/api/rera/check", { current_rent: $("cur").value, proposed_rent: $("prop").value, average_rent: $("avg").value });
+  if (r.error) { $("checkOut").innerHTML = `<div class="result bad"><div class="verdict"><span class="dot"></span>${esc(r.error)}</div></div>`; return; }
+  const maxPct = 25, capW = Math.min(r.max_percent / maxPct * 100, 100), propW = Math.max(0, Math.min(r.proposed_percent / maxPct * 100, 100));
+  $("checkOut").innerHTML = `<div class="result ${r.compliant ? "ok" : "bad"}">
+    <div class="verdict"><span class="dot"></span>${r.compliant ? "Within the RERA cap" : "Over the RERA cap"}</div>
+    <div class="meter"><span style="width:${capW}%;background:rgba(52,211,153,.35)"></span><span style="width:${propW}%;background:${r.compliant ? "var(--ok)" : "var(--bad)"};opacity:.85;height:4px;top:2px"></span><i style="left:${capW}%"></i></div>
+    <div class="muted">Cap ${r.max_percent}% · proposed ${r.proposed_percent}% · rent is ${r.gap_percent}% below the average</div>
+    <p style="margin:10px 0 0">${esc(r.reason)}</p>
+    <dl class="facts"><dt>Maximum rent</dt><dd><b>${aed(r.max_rent)}</b></dd>${r.excess ? `<dt>Over by</dt><dd style="color:var(--bad)">${aed(r.excess)}</dd>` : ""}<dt>Rule</dt><dd>${esc(r.rule)}</dd></dl></div>`;
+};
+$("sample").onclick = async () => { $("text").value = await fetch("/sample-contract.txt").then(r => r.ok ? r.text() : ""); };
+$("audit").onclick = async () => {
+  const r = await post("/api/contract/audit", { text: $("text").value, average_rent: $("avg2").value });
+  if (r.error) { $("auditOut").innerHTML = `<div class="result bad"><div class="verdict"><span class="dot"></span>${esc(r.error)}</div></div>`; return; }
+  const c = r.contract, a = r.audit, p = c.property;
+  $("auditOut").innerHTML = `<div class="result ${a.compliant ? "ok" : "bad"}">
+    <div class="verdict"><span class="dot"></span>${a.compliant ? "No problems found" : `${a.findings.length} finding${a.findings.length > 1 ? "s" : ""}`}</div>
+    <dl class="facts"><dt>Ejari no.</dt><dd>${esc(c.ejari_number || "not found")}</dd><dt>Property</dt><dd>${esc([p.building, p.unit && "unit " + p.unit, p.area].filter(Boolean).join(", ") || "not found")}</dd>
+      <dt>Parties</dt><dd>${esc(c.landlord || "?")} → ${esc(c.tenant || "?")}</dd><dt>Rent</dt><dd>${c.annual_rent ? aed(c.annual_rent) : "not found"}${c.payments.cheques ? ` · ${c.payments.cheques} cheques` : ""}</dd>
+      <dt>Period</dt><dd>${esc(c.start_date || "?")} → ${esc(c.end_date || "?")}</dd><dt>Language</dt><dd>${c.language === "ar" ? "Arabic" : "English"}</dd></dl>
+    ${a.findings.map(f => `<div class="finding ${f.severity}">${esc(f.message)}<small>${f.clause ? "Clause " + f.clause + " · " : ""}${esc(f.rule)}</small></div>`).join("")}
+    ${a.unchecked.length ? `<p class="muted" style="margin:10px 0 0">${a.unchecked.map(esc).join("<br>")}</p>` : ""}
+    <p class="muted" style="margin:10px 0 0">${esc(a.disclaimer)}</p></div>`;
+};
+
+/* ---------------- run ---------------- */
 function resize() {
-  const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h); camera.aspect = w / h; camera.updateProjectionMatrix();
-  const d = Math.max(110, 150 / Math.min(camera.aspect, 1.6));      // narrower view: step back so every building fits
-  camera.position.set(d * 0.55, d * 0.5, d * 0.85);
+  const w = innerWidth, h = innerHeight; renderer.setSize(w, h); composer.setSize(w, h); bloom.setSize(w, h);
+  camera.aspect = w / h; camera.updateProjectionMatrix();
 }
 addEventListener("resize", resize); resize();
-(function loop() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(loop); })();
-fetch("/api/portfolio").then(r => r.json()).then(build);
+
+const clock = new THREE.Clock();
+(function loop() {
+  const dt = clock.getDelta(), t = clock.elapsedTime;
+  if (flight) {
+    flight.t = Math.min(1, flight.t + dt / 1.2); const e = 1 - Math.pow(1 - flight.t, 3);
+    camera.position.lerpVectors(flight.fromPos, flight.toPos, e); controls.target.lerpVectors(flight.fromT, flight.toT, e);
+    if (flight.t >= 1) flight = null;
+  }
+  const blink = (Math.sin(t * 3) > 0.6) ? 1 : 0.15;
+  Object.values(groups).forEach(g => g.userData.beacon && (g.userData.beacon.material.color.setRGB(blink, blink * 0.15, blink * 0.15)));
+  if (scene.userData.spire) scene.userData.spire.userData.tip.visible = Math.sin(t * 2.2) > 0;
+  controls.update(); composer.render();
+  requestAnimationFrame(loop);
+})();
+
+fetch("/api/portfolio").then(r => r.json()).then(d => {
+  DATA = d;
+  const n = d.buildings.length, gap = 62;
+  d.buildings.forEach((b, i) => addBuilding(b, (i - (n - 1) / 2) * gap, (i % 2 ? -10 : 8)));
+  overview(d); paint();
+  $("loading").style.opacity = 0; setTimeout(() => $("loading").remove(), 600);
+}).catch(() => { $("loading").textContent = "Couldn't load the portfolio. Is the server running?"; });
 </script>
 </body>
 </html>
