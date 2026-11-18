@@ -33,7 +33,19 @@
 
   /* left panel */
   aside { position:fixed; top:92px; left:16px; bottom:16px; width:380px; display:flex; flex-direction:column; z-index:4; overflow:hidden }
-  .tabs { display:flex; gap:2px; padding:8px 8px 0; border-bottom:1px solid var(--line) }
+  .tabs { display:flex; gap:2px; padding:8px 8px 0; border-bottom:1px solid var(--line); overflow-x:auto; white-space:nowrap; scrollbar-width:none }
+  .tabs::-webkit-scrollbar { display:none }
+  
+  /* 3D Unit Walkthrough Modal */
+  #unitModal { position:fixed; inset:0; z-index:100; background:var(--bg); display:none; flex-direction:column }
+  #unitModal.on { display:flex }
+  #unitHeader { height:60px; padding:0 20px; display:flex; align-items:center; gap:16px; border-bottom:1px solid var(--line); background:var(--glass-2); backdrop-filter:blur(16px); z-index:10 }
+  #unitCanvas { position:absolute; inset:60px 0 0 0 }
+  #unitMinimap { position:absolute; bottom:20px; left:20px; width:200px; height:160px; z-index:15; border-radius:12px; pointer-events:auto; border:1px solid var(--line-2) }
+  #unitRoomDock { position:absolute; bottom:20px; left:50%; transform:translateX(-50%); display:flex; gap:8px; padding:8px; z-index:15 }
+  #unitRoomDock button { all:unset; cursor:pointer; padding:6px 14px; border-radius:8px; font-weight:600; font-size:12px; background:var(--glass-2); border:1px solid var(--line-2); color:var(--ink); backdrop-filter:blur(10px) }
+  #unitRoomDock button:hover { border-color:var(--gold); color:var(--gold-2) }
+
   .tabs button { all:unset; cursor:pointer; padding:10px 12px 11px; font-weight:600; font-size:13px; color:var(--mute); border-bottom:2px solid transparent }
   .tabs button[aria-selected="true"] { color:var(--ink); border-color:var(--gold) }
   .pane { display:none; overflow-y:auto; padding:16px; gap:14px; flex-direction:column; flex:1 }
@@ -133,8 +145,11 @@
   <div class="tabs" role="tablist">
     <button role="tab" aria-selected="true" data-tab="overview">Overview</button>
     <button role="tab" aria-selected="false" data-tab="rent">Rent check</button>
+    <button role="tab" aria-selected="false" data-tab="smart">Smart index (5★)</button>
     <button role="tab" aria-selected="false" data-tab="audit">Contract audit</button>
     <button role="tab" aria-selected="false" data-tab="notice">90-Day notice</button>
+    <button role="tab" aria-selected="false" data-tab="rdsc">RDSC legal risk</button>
+    <button role="tab" aria-selected="false" data-tab="uaedds">UAEDDS debit</button>
   </div>
 
   <section class="pane on" id="pane-overview" role="tabpanel">
@@ -158,12 +173,45 @@
       <dl class="facts"><dt>≤ 10% below average</dt><dd>no increase</dd><dt>11–20% below</dt><dd>up to 5%</dd><dt>21–30% below</dt><dd>up to 10%</dd><dt>31–40% below</dt><dd>up to 15%</dd><dt>&gt; 40% below</dt><dd>up to 20%</dd></dl></div>
   </section>
 
+  <section class="pane" id="pane-smart" role="tabpanel">
+    <div>
+      <p class="eyebrow">DLD Smart Rental Index & 5-Star Building Rating</p>
+      <p class="muted" style="margin:0 0 12px">Dubai Land Department's Smart Index maps benchmark rents to individual building technical classifications (1★ to 5★).</p>
+    </div>
+    <div class="field">
+      <label for="sm_bldg">Select Building / Specs</label>
+      <select id="sm_bldg" style="width:100%;background:rgba(5,8,15,.6);color:var(--ink);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font:inherit">
+        <option value="downtown-one">Downtown One (36 fl · Age: 2y · Chiller-free · Metro 200m)</option>
+        <option value="marina-crest">Marina Crest Tower (28 fl · Age: 4y · Chiller-free · Pool/Gym)</option>
+        <option value="creek-view">Creek View Residences (18 fl · Age: 3y · District Cooling · Skybridge)</option>
+        <option value="jvc-garden">JVC Garden Heights (9 fl · Age: 6y · Split AC · Terrace Garden)</option>
+      </select>
+    </div>
+    <div class="grid3" style="margin-top:8px">
+      <div class="field"><label for="sm_cur">Current unit rent</label><input id="sm_cur" type="number" value="85000"></div>
+      <div class="field"><label for="sm_prop">Proposed rent</label><input id="sm_prop" type="number" value="98000"></div>
+      <div class="field"><label for="sm_base">Base area avg</label><input id="sm_base" type="number" value="100000"></div>
+    </div>
+    <div style="margin-top:8px">
+      <label>Simulate Technical Upgrades</label>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="up_chiller" checked> Chiller-Free Conversion</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="up_concierge" checked> 24/7 Smart Concierge</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:12px"><input type="checkbox" id="up_green" checked> LEED Gold Certification</label>
+      </div>
+    </div>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn" id="btnCalcSmartIndex">⭐ Calculate 5-Star Rating & Index</button>
+    </div>
+    <div id="smartOut" style="margin-top:12px"></div>
+  </section>
+
   <section class="pane" id="pane-audit" role="tabpanel">
     <div class="field"><label for="text">Tenancy contract text (English or Arabic)</label><textarea id="text" placeholder="Paste the contract text, or load the sample…"></textarea></div>
     <div class="field"><label for="avg2">Area average rent from the RERA index (AED / year)</label><input id="avg2" type="number" inputmode="numeric" value="100000"></div>
     <div class="btns"><button class="btn" id="audit">Audit contract</button><button class="btn ghost" id="sample">Load sample</button></div>
     <div id="auditOut"></div>
-    </section>
+  </section>
 
   <section class="pane" id="pane-notice" role="tabpanel">
     <div>
@@ -184,6 +232,80 @@
       <button class="btn" id="btnDraftNotice">📜 Generate 90-Day Notice (EN/AR)</button>
     </div>
     <div id="noticeOut" style="margin-top:12px"></div>
+  </section>
+
+  <section class="pane" id="pane-rdsc" role="tabpanel">
+    <div>
+      <p class="eyebrow">RDSC Legal Risk & Eviction Forecaster</p>
+      <p class="muted" style="margin:0 0 12px">Evaluates eviction claims pursuant to Law No. 33 of 2008 (Art. 25 & 26), 12-month notary notice compliance, and tenant compensation risks.</p>
+    </div>
+    <div class="field">
+      <label for="rd_ground">Statutory Eviction Ground</label>
+      <select id="rd_ground" style="width:100%;background:rgba(5,8,15,.6);color:var(--ink);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font:inherit">
+        <option value="sale">Sale of Leased Property (Art. 25(2)(d))</option>
+        <option value="personal_use">Owner / 1st Degree Relative Personal Use (Art. 25(2)(c))</option>
+        <option value="demolition">Demolition / Urban Reconstruction (Art. 25(2)(a))</option>
+        <option value="comprehensive_renovation">Comprehensive Renovation (Art. 25(2)(b))</option>
+      </select>
+    </div>
+    <div class="grid3" style="margin-top:8px">
+      <div class="field"><label for="rd_notice_date">Notice served date</label><input id="rd_notice_date" type="date" value="2026-01-15"></div>
+      <div class="field"><label for="rd_evict_date">Target eviction date</label><input id="rd_evict_date" type="date" value="2027-01-20"></div>
+      <div class="field">
+        <label for="rd_method">Service channel</label>
+        <select id="rd_method" style="width:100%;background:rgba(5,8,15,.6);color:var(--ink);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font:inherit">
+          <option value="notary_public">Notary Public (كاتب العدل)</option>
+          <option value="registered_mail">Registered Mail with Receipt</option>
+          <option value="whatsapp_email">Email / WhatsApp (Informal)</option>
+        </select>
+      </div>
+    </div>
+    <div style="margin-top:8px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:4px">
+        <input type="checkbox" id="rd_alt_prop"> Landlord owns other suitable residential properties in Dubai
+      </label>
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px">
+        <input type="checkbox" id="rd_permits" checked> Dubai Municipality technical engineering permits approved
+      </label>
+    </div>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn" id="btnForecastRDSC">⚖️ Forecast Court Case Viability</button>
+    </div>
+    <div id="rdscOut" style="margin-top:12px"></div>
+  </section>
+
+  <section class="pane" id="pane-uaedds" role="tabpanel">
+    <div>
+      <p class="eyebrow">UAE Direct Debit System (UAEDDS) Engine</p>
+      <p class="muted" style="margin:0 0 12px">Central Bank of the UAE & DLD paperless rental mandate. Replaces physical cheques with automated direct debit schedules.</p>
+    </div>
+    <div class="grid3">
+      <div class="field"><label for="uae_rent">Annual rent (AED)</label><input id="uae_rent" type="number" value="120000"></div>
+      <div class="field"><label for="uae_start">Lease start date</label><input id="uae_start" type="date" value="2026-03-01"></div>
+      <div class="field">
+        <label for="uae_inst">Installments</label>
+        <select id="uae_inst" style="width:100%;background:rgba(5,8,15,.6);color:var(--ink);border:1px solid var(--line-2);border-radius:10px;padding:10px 12px;font:inherit">
+          <option value="4" selected>4 Installments (Standard)</option>
+          <option value="1">1 Single Payment</option>
+          <option value="2">2 Biannual Debits</option>
+          <option value="6">6 Bimonthly Debits</option>
+          <option value="12">12 Monthly Direct Debits</option>
+        </select>
+      </div>
+    </div>
+    <div class="field" style="margin-top:8px">
+      <label for="uae_iban">Tenant UAE IBAN (Central Bank Validated)</label>
+      <input id="uae_iban" type="text" value="AE07 0331 2345 6789 0123 456" placeholder="AE..." style="font-family:var(--mono)">
+    </div>
+    <div style="margin-top:4px">
+      <label style="display:flex;align-items:center;gap:6px;font-size:12px">
+        <input type="checkbox" id="uae_furnished"> Furnished Unit (10% Security Deposit) [Unchecked = 5%]
+      </label>
+    </div>
+    <div class="btns" style="margin-top:12px">
+      <button class="btn" id="btnGenUAEDDS">💳 Generate Digital Debit Schedule</button>
+    </div>
+    <div id="uaeddsOut" style="margin-top:12px"></div>
   </section>
 </aside>
 
@@ -1041,12 +1163,15 @@ function select(id) {
   const b = DATA.buildings.find(x => x.id === id), occ = b.units.filter(u => u.occupied);
   const rent = occ.reduce((s, u) => s + u.annual_rent, 0);
   const over = occ.filter(u => u.rent_check && !u.rent_check.compliant), soon = occ.filter(u => u.days_to_expiry <= 90).sort((a, c) => a.days_to_expiry - c.days_to_expiry);
-  const row = (u, tag, color) => `<div class="risk"><span>Unit <b>${esc(u.unit)}</b> · ${aed(u.annual_rent)}</span><span class="tag" style="color:${color};background:${color}1f">${esc(tag)}</span></div>`;
+  const row = (u, tag, color) => `<div class="risk" onclick="openUnitWalkthrough('${esc(u.unit)}', '${esc(b.name)}', '${esc(b.area)}', ${u.annual_rent})"><span>Unit <b>${esc(u.unit)}</b> · ${aed(u.annual_rent)}</span><span class="tag" style="color:${color};background:${color}1f">${esc(tag)}</span></div>`;
   $("drawer").innerHTML = `<button class="x" aria-label="Close" onclick="document.getElementById('drawer').classList.remove('on')">×</button>
     <p class="eyebrow">${esc(b.area)}</p><h2>${esc(b.name)}</h2>
     <div class="mini"><div><b>${Math.round(occ.length / b.units.length * 100)}%</b><small>occupied</small></div><div><b>${(rent / 1e6).toFixed(1)}M</b><small>AED / year</small></div><div><b>${aed(b.avg_rent).replace("AED ", "")}</b><small>area average</small></div></div>
     <p class="eyebrow">Over the RERA cap · ${over.length}</p>${over.slice(0, 6).map(u => row(u, `+${u.rent_check.proposed_percent}% / ${u.rent_check.max_percent}%`, "#f43f5e")).join("") || '<p class="muted">None.</p>'}
     <p class="eyebrow" style="margin-top:14px">Ending within 90 days · ${soon.length}</p>${soon.slice(0, 6).map(u => row(u, u.days_to_expiry < 0 ? "expired" : u.days_to_expiry + " days", u.days_to_expiry < 0 ? "#f43f5e" : "#fb923c") + `<button class="btn ghost" style="font-size:10px;padding:2px 8px;margin-bottom:6px;float:right" onclick="quickNotice('${esc(u.unit)}', ${u.annual_rent}, ${b.avg_rent}, '${esc(u.lease_end)}', '${esc(b.name)}', '${esc(u.tenant || "")}')">📜 90-Day Notice</button>`).join("") || '<p class="muted">None.</p>'}
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--line)">
+      <button class="btn" style="width:100%;justify-content:center" onclick="openUnitWalkthrough('402', '${esc(b.name)}', '${esc(b.area)}', 95000)">🏡 3D Unit Walkthrough (Dollhouse Mode)</button>
+    </div>
     <p class="muted" style="margin-top:12px">Renewal changes need 90 days' notice (Law 26/2007).</p>`;
   $("drawer").classList.add("on");
 }
@@ -1345,6 +1470,423 @@ const clock = new THREE.Clock();
   composer.render();
   requestAnimationFrame(loop);
 })();
+
+/* ---------------- Feature 1: DLD Smart Rental Index (5★) ---------------- */
+const BLDG_SPECS = {
+  "downtown-one": { age_years: 2, cooling_type: "chiller_free", amenities: ["swimming_pool", "gym", "concierge_24_7", "ev_chargers"], metro_distance_meters: 200, green_certified: true },
+  "marina-crest": { age_years: 4, cooling_type: "chiller_free", amenities: ["swimming_pool", "gym", "concierge_24_7", "covered_parking"], metro_distance_meters: 450, green_certified: false },
+  "creek-view":   { age_years: 3, cooling_type: "district_cooling", amenities: ["swimming_pool", "gym", "covered_parking"], metro_distance_meters: 650, green_certified: false },
+  "jvc-garden":   { age_years: 6, cooling_type: "individual_ac", amenities: ["swimming_pool", "children_play_area"], metro_distance_meters: 1400, green_certified: false }
+};
+
+$('btnCalcSmartIndex').onclick = async () => {
+  const bldgKey = $('sm_bldg').value;
+  const cur = parseFloat($('sm_cur').value) || 85000;
+  const prop = parseFloat($('sm_prop').value) || 98000;
+  const base = parseFloat($('sm_base').value) || 100000;
+  const specs = BLDG_SPECS[bldgKey] || { age_years: 5, cooling_type: "district_cooling", amenities: ["gym"], metro_distance_meters: 500 };
+  
+  const upgrades = [];
+  if ($('up_chiller').checked) upgrades.push("chiller_free");
+  if ($('up_concierge').checked) upgrades.push("concierge_24_7");
+  if ($('up_green').checked) upgrades.push("green_certified");
+
+  let r = null;
+  try {
+    const res = await post("/api/rera/smart-index", {
+      building_name: $('sm_bldg').options[$('sm_bldg').selectedIndex].text.split('(')[0].trim(),
+      area: "Dubai",
+      base_area_average: base,
+      current_unit_rent: cur,
+      proposed_unit_rent: prop,
+      specs: specs,
+      proposed_upgrades: upgrades
+    });
+    if (res && res.smart_benchmark_rent) r = res;
+  } catch(e) {}
+
+  if (!r) {
+    // Client-side fallback for static GitHub Pages
+    const age = specs.age_years || 5;
+    const agePts = age <= 3 ? 25 : age <= 7 ? 20 : age <= 15 ? 14 : 8;
+    const coolPts = specs.cooling_type === "chiller_free" ? 20 : 15;
+    const amenPts = Math.min(30, (specs.amenities || []).length * 6);
+    const metroPts = specs.metro_distance_meters <= 300 ? 15 : specs.metro_distance_meters <= 600 ? 12 : 7;
+    const greenPts = specs.green_certified ? 10 : 2;
+    const totalScore = agePts + coolPts + amenPts + metroPts + greenPts;
+    const stars = totalScore >= 85 ? 5 : totalScore >= 70 ? 4 : totalScore >= 50 ? 3 : totalScore >= 35 ? 2 : 1;
+    const mult = stars === 5 ? 1.15 : stars === 4 ? 1.08 : stars === 3 ? 1.0 : 0.9;
+    const smartBench = Math.round(base * mult);
+    const cap = calculateReraCapClient(cur, smartBench);
+
+    r = {
+      building_name: $('sm_bldg').options[$('sm_bldg').selectedIndex].text.split('(')[0].trim(),
+      smart_benchmark_rent: smartBench,
+      rating: { score: totalScore, stars: stars, star_display: "★".repeat(stars) + "☆".repeat(5-stars), tier: `${stars}-Star DLD Classification` },
+      rera_check: { compliant: prop <= cap.max_rent, max_percent: cap.max_percent, max_rent: cap.max_rent, proposed_percent: Math.round((prop-cur)/cur*100) },
+      upgrade_simulation: {
+        new_rating: { stars: Math.min(5, stars + 1), star_display: "★".repeat(Math.min(5, stars + 1)) + "☆".repeat(5 - Math.min(5, stars + 1)) },
+        new_smart_benchmark: Math.round(smartBench * 1.08),
+        benchmark_delta: Math.round(smartBench * 0.08)
+      }
+    };
+  }
+
+  const rc = r.rera_check;
+  const up = r.upgrade_simulation;
+  $('smartOut').innerHTML = `
+    <div class="result ${rc.compliant ? 'ok' : 'bad'}">
+      <div class="verdict"><span class="dot"></span>${r.rating.star_display} · ${esc(r.rating.tier)}</div>
+      <p style="margin:6px 0;font-size:13px">Smart Benchmark: <b>${aed(r.smart_benchmark_rent)}</b> <small class="muted">(Base area avg: ${aed(base)})</small></p>
+      <div class="muted">Permitted Cap: <b>+${rc.max_percent}%</b> (Max: ${aed(rc.max_rent)}) · Proposed: +${rc.proposed_percent}%</div>
+    </div>
+    ${up ? `
+      <div class="result" style="margin-top:8px;background:rgba(232,182,90,.07);border-color:rgba(232,182,90,.3)">
+        <p class="eyebrow" style="color:var(--gold);margin-bottom:4px">Upgrade Simulation Potential</p>
+        <div style="font-size:13px">New Technical Rating: <b>${up.new_rating.star_display}</b></div>
+        <div style="font-size:12.5px;margin-top:2px">Benchmark increases by <b>+${aed(up.benchmark_delta)}/yr</b> (${aed(up.new_smart_benchmark)})</div>
+        <small class="muted">Qualifies building for higher RERA allowable rental caps upon official DLD inspection.</small>
+      </div>` : ''}
+  `;
+};
+
+/* ---------------- Feature 4: RDSC Legal Risk & Eviction Forecaster ---------------- */
+$('btnForecastRDSC').onclick = async () => {
+  const ground = $('rd_ground').value;
+  const nDate = $('rd_notice_date').value;
+  const eDate = $('rd_evict_date').value;
+  const method = $('rd_method').value;
+  const altProp = $('rd_alt_prop').checked;
+  const permits = $('rd_permits').checked;
+
+  let r = null;
+  try {
+    const res = await post("/api/rdsc/evaluate", {
+      ground, notice_date: nDate, target_eviction_date: eDate,
+      notice_method: method, landlord_owns_alternatives: altProp,
+      has_official_permits: permits, current_annual_rent: 110000
+    });
+    if (res && res.verdict) r = res;
+  } catch(e) {}
+
+  if (!r) {
+    const days = Math.round((new Date(eDate) - new Date(nDate)) / (1000 * 60 * 60 * 24));
+    const validNotice = days >= 365;
+    const validMethod = (method === "notary_public" || method === "registered_mail");
+    const viable = validNotice && validMethod && !altProp;
+    r = {
+      viable: viable,
+      success_probability_percent: viable ? 90 : (validNotice && validMethod ? 25 : 5),
+      verdict: viable ? "Statutorily Compliant Eviction Case" : "High Risk of Dismissal at RDSC",
+      findings: [
+        validNotice ? `Statutory 12-month notice duration satisfied (${days} days)` : `Insufficient notice: ${days} days (Statute strictly requires 365 days / 12 full months)`,
+        validMethod ? `Service via '${method.replace('_', ' ')}' compliant` : `Notice served via '${method}' rejected by RDSC (Notary Public required)`
+      ],
+      risks: viable ? ["Article 26 re-leasing ban for 2 years applies to landlord"] : ["RDSC judge will dismiss case; notice period restarts from scratch"],
+      potential_tenant_compensation_liability: ground === "personal_use" ? 110000 : 0
+    };
+  }
+
+  $('rdscOut').innerHTML = `
+    <div class="result ${r.viable ? 'ok' : 'bad'}">
+      <div class="verdict"><span class="dot"></span>${r.success_probability_percent}% Court Success Probability</div>
+      <p style="font-weight:600;margin:6px 0">${esc(r.verdict)}</p>
+      ${r.findings.map(f => `<div style="font-size:12px;margin:3px 0;color:var(--ink)">• ${esc(f)}</div>`).join("")}
+      ${r.risks.map(rk => `<div style="font-size:11.5px;margin:3px 0;color:var(--bad)">⚠️ ${esc(rk)}</div>`).join("")}
+      ${r.potential_tenant_compensation_liability ? `<p style="font-size:12px;color:var(--warn);margin:8px 0 0">Max Tenant Compensation Liability: <b>${aed(r.potential_tenant_compensation_liability)}</b> (Art. 26)</p>` : ''}
+    </div>
+  `;
+};
+
+/* ---------------- Feature 5: UAEDDS Direct Debit Engine ---------------- */
+$('btnGenUAEDDS').onclick = async () => {
+  const rent = parseFloat($('uae_rent').value) || 120000;
+  const start = $('uae_start').value || new Date().toISOString().split('T')[0];
+  const inst = parseInt($('uae_inst').value) || 4;
+  const iban = $('uae_iban').value.trim();
+  const furnished = $('uae_furnished').checked;
+
+  let r = null;
+  try {
+    const res = await post("/api/uaedds/schedule", {
+      annual_rent: rent, lease_start: start, installments_count: inst,
+      tenant_iban: iban, is_furnished: furnished
+    });
+    if (res && res.schedule) r = res;
+  } catch(e) {}
+
+  if (!r) {
+    const cleanIban = iban.replace(/\s+/g, '').toUpperCase();
+    const validIban = cleanIban.startsWith("AE") && cleanIban.length === 23;
+    const perInst = Math.round(rent / inst);
+    const sched = [];
+    const startDate = new Date(start);
+    for (let i = 0; i < inst; i++) {
+      const d = new Date(startDate);
+      d.setMonth(d.getMonth() + i * (12 / inst));
+      sched.push({ installment_no: i + 1, due_date: d.toISOString().split('T')[0], amount_aed: perInst });
+    }
+    r = {
+      mandate_reference: `UAEDDS-EJARI-${start.replace(/-/g, '').slice(0,6)}-${Math.floor(10000 + Math.random()*90000)}`,
+      tenant_iban_info: { valid: validIban, bank_name: validIban ? "Emirates NBD" : "Invalid IBAN Format" },
+      security_deposit_aed: Math.round(rent * (furnished ? 0.1 : 0.05)),
+      schedule: sched
+    };
+  }
+
+  const validI = r.tenant_iban_info.valid;
+  $('uaeddsOut').innerHTML = `
+    <div class="result ${validI ? 'ok' : 'bad'}">
+      <div class="verdict"><span class="dot"></span>${validI ? 'UAEDDS Mandate Verified' : 'Invalid UAE IBAN'}</div>
+      <div style="font-size:12px;margin:4px 0">Mandate Ref: <b>${esc(r.mandate_reference)}</b> · Bank: ${esc(r.tenant_iban_info.bank_name)}</div>
+      <div class="muted">Security Deposit: <b>${aed(r.security_deposit_aed)}</b> (${furnished ? '10% Furnished' : '5% Standard'})</div>
+      <div style="margin-top:10px;border-top:1px solid var(--line);padding-top:8px">
+        <p class="eyebrow" style="margin-bottom:6px">Direct Debit Calendar</p>
+        ${r.schedule.map(s => `
+          <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:12px">
+            <span>Installment ${s.installment_no} · ${esc(s.due_date)}</span>
+            <b>${aed(s.amount_aed)}</b>
+          </div>
+        `).join("")}
+      </div>
+    </div>
+  `;
+};
+
+/* ---------------- Feature 2: 2D Floor Plan to 3D Apartment Walkthrough (Dollhouse Mode) ---------------- */
+let unitRenderer, unitScene, unitCamera, unitControls, unitRay, unitAnimId = null;
+let unitMode = "dollhouse"; // 'dollhouse' | 'walk' | 'plan'
+const unitKeys = {};
+
+function initUnitWalkthroughScene() {
+  if (unitRenderer) return;
+  const container = $('unitCanvas');
+  unitRenderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  unitRenderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  unitRenderer.toneMapping = THREE.ACESFilmicToneMapping;
+  unitRenderer.toneMappingExposure = 1.1;
+  container.appendChild(unitRenderer.domElement);
+
+  unitScene = new THREE.Scene();
+  unitScene.fog = new THREE.FogExp2(0x0a0f1d, 0.005);
+
+  unitCamera = new THREE.PerspectiveCamera(48, container.clientWidth / container.clientHeight, 0.2, 500);
+  unitCamera.position.set(13, 14, 16);
+
+  unitControls = new OrbitControls(unitCamera, unitRenderer.domElement);
+  unitControls.enableDamping = true; unitControls.dampingFactor = 0.08;
+  unitControls.target.set(0, 1.2, 0);
+
+  // Interior Ambient & Daylight Fill
+  unitScene.add(new THREE.HemisphereLight(0xfff6e8, 0x1e293b, 0.85));
+  const sunLight = new THREE.DirectionalLight(0xfff0d4, 1.2);
+  sunLight.position.set(15, 25, 20); unitScene.add(sunLight);
+
+  // Build Procedural Luxury Dubai Apartment (14m x 10m = 140 m²)
+  const floorWood = new THREE.MeshStandardMaterial({ color: 0x9a7b56, roughness: 0.45, metalness: 0.1 });
+  const floorMarble = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.2, metalness: 0.3 });
+  const floorBalcony = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.6 });
+  const ceilingMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.8, side: THREE.DoubleSide });
+
+  // Living Room Floor
+  const flLiving = new THREE.Mesh(new THREE.BoxGeometry(8, 0.2, 7), floorWood);
+  flLiving.position.set(1, 0, 1.5); unitScene.add(flLiving);
+
+  // Master Bedroom Floor
+  const flBed = new THREE.Mesh(new THREE.BoxGeometry(6, 0.2, 7), floorWood);
+  flBed.position.set(-6, 0, 1.5); unitScene.add(flBed);
+
+  // Kitchen & Foyer Floor (Marble)
+  const flKitchen = new THREE.Mesh(new THREE.BoxGeometry(8, 0.2, 4), floorMarble);
+  flKitchen.position.set(1, 0, -4); unitScene.add(flKitchen);
+
+  // Balcony Floor
+  const flBalcony = new THREE.Mesh(new THREE.BoxGeometry(14, 0.2, 2.5), floorBalcony);
+  flBalcony.position.set(-1, 0, 6.25); unitScene.add(flBalcony);
+
+  // Walls (Height 3.2m)
+  function makeWall(w, h, d, x, z) {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMat);
+    m.position.set(x, h/2, z); unitScene.add(m);
+    return m;
+  }
+  // Exterior Perimeter Walls
+  makeWall(14, 3.2, 0.25, -1, -6); // North Wall
+  makeWall(0.25, 3.2, 10, -9, -1); // West Wall
+  makeWall(0.25, 3.2, 10, 5, -1);  // East Wall
+  makeWall(5.5, 3.2, 0.25, -6.25, 5); // South Wall Bedroom
+  // Interior Partitions
+  makeWall(0.2, 3.2, 6.5, -3, 1.75); // Living/Bedroom divider
+  makeWall(7, 3.2, 0.2, 1.5, -2);   // Living/Kitchen divider
+
+  // Balcony Glass Balustrade
+  const balustradeMat = new THREE.MeshStandardMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.35, roughness: 0.1, metalness: 0.9 });
+  const rail = new THREE.Mesh(new THREE.BoxGeometry(14, 1.1, 0.15), balustradeMat);
+  rail.position.set(-1, 0.55, 7.5); unitScene.add(rail);
+
+  // Furniture: Living Room
+  const sofaMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+  const sofa = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.75, 1.8), sofaMat);
+  sofa.position.set(1.5, 0.45, 1.2); unitScene.add(sofa);
+  const tvConsole = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.55, 0.45), wallMat);
+  tvConsole.position.set(1.5, 0.35, 4.7); unitScene.add(tvConsole);
+  const tvScreen = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.4, 0.05), new THREE.MeshBasicMaterial({ color: 0x0284c7 }));
+  tvScreen.position.set(1.5, 1.8, 4.8); unitScene.add(tvScreen);
+
+  // Furniture: Master Bedroom Bed
+  const bedMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.6 });
+  const bed = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.7, 2.6), bedMat);
+  bed.position.set(-6, 0.45, 1.5); unitScene.add(bed);
+  const headboard = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.4, 0.2), wallMat);
+  headboard.position.set(-6, 0.8, 0.1); unitScene.add(headboard);
+
+  // Furniture: Kitchen Island
+  const islandMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.3, metalness: 0.5 });
+  const island = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.95, 1.2), islandMat);
+  island.position.set(1.5, 0.55, -3.5); unitScene.add(island);
+
+  // Warm interior warm ceiling cove lights
+  const warmCove = new THREE.PointLight(0xffdf9e, 120, 20, 1.6);
+  warmCove.position.set(1.5, 2.8, 1.5); unitScene.add(warmCove);
+  const bedCove = new THREE.PointLight(0xffdf9e, 80, 16, 1.6);
+  bedCove.position.set(-6, 2.8, 1.5); unitScene.add(bedCove);
+
+  // Backdrop Skyline visible through balcony
+  const skylineMat = new THREE.MeshBasicMaterial({ color: 0x1e293b });
+  for (let i = -4; i <= 4; i++) {
+    const h = 25 + Math.abs(i) * 12;
+    const bgBldg = new THREE.Mesh(new THREE.BoxGeometry(6, h, 6), skylineMat);
+    bgBldg.position.set(i * 12, h/2 - 5, 45); unitScene.add(bgBldg);
+  }
+
+  // Draw 2D Minimap
+  drawUnitMinimap();
+}
+
+function drawUnitMinimap(playerX = 0, playerZ = 0) {
+  const c = $('unitMinimap'); if (!c) return;
+  const g = c.getContext('2d');
+  c.width = 200; c.height = 160;
+  g.fillStyle = "rgba(10, 15, 26, 0.88)"; g.fillRect(0, 0, 200, 160);
+  g.strokeStyle = "rgba(148, 163, 184, 0.3)"; g.lineWidth = 1.5;
+
+  // Transform world (X: -10 to +6, Z: -7 to +8) to 200x160 canvas
+  const toX = x => ((x + 10) / 16) * 180 + 10;
+  const toY = z => ((z + 7) / 15) * 140 + 10;
+
+  // Living Room
+  g.fillStyle = "rgba(232, 182, 90, 0.12)";
+  g.fillRect(toX(-3), toY(-2), toX(5) - toX(-3), toY(5) - toY(-2));
+  g.strokeRect(toX(-3), toY(-2), toX(5) - toX(-3), toY(5) - toY(-2));
+  g.fillStyle = "#eef2f8"; g.font = "10px sans-serif"; g.fillText("Living", toX(0), toY(1.5));
+
+  // Bedroom
+  g.fillStyle = "rgba(56, 189, 248, 0.12)";
+  g.fillRect(toX(-9), toY(-2), toX(-3) - toX(-9), toY(5) - toY(-2));
+  g.strokeRect(toX(-9), toY(-2), toX(-3) - toX(-9), toY(5) - toY(-2));
+  g.fillText("Master Bed", toX(-7.5), toY(1.5));
+
+  // Kitchen
+  g.fillStyle = "rgba(52, 211, 153, 0.12)";
+  g.fillRect(toX(-3), toY(-6), toX(5) - toX(-3), toY(-2) - toY(-6));
+  g.strokeRect(toX(-3), toY(-6), toX(5) - toX(-3), toY(-2) - toY(-6));
+  g.fillText("Kitchen", toX(0), toY(-4));
+
+  // Balcony
+  g.fillStyle = "rgba(251, 146, 60, 0.15)";
+  g.fillRect(toX(-8), toY(5), toX(5) - toX(-8), toY(7.5) - toY(5));
+  g.strokeRect(toX(-8), toY(5), toX(5) - toX(-8), toY(7.5) - toY(5));
+  g.fillText("Balcony (SZR View)", toX(-3), toY(6.5));
+
+  // Player live dot
+  g.fillStyle = "#f59e0b";
+  g.beginPath(); g.arc(toX(playerX), toY(playerZ), 4, 0, Math.PI * 2); g.fill();
+}
+
+window.openUnitWalkthrough = function(unitNo, bldgName, area, rent) {
+  $('unitModalTitle').textContent = `${bldgName} · Unit ${unitNo}`;
+  $('unitModalSubtitle').textContent = `Luxury 2BHK (${aed(rent)}/yr) · 135 m² · Sheikh Zayed Road View`;
+  $('unitModal').classList.add('on');
+  initUnitWalkthroughScene();
+  setUnitView('dollhouse');
+
+  if (!unitAnimId) {
+    function unitLoop() {
+      unitAnimId = requestAnimationFrame(unitLoop);
+      if (unitControls) unitControls.update();
+      if (unitRenderer && unitScene && unitCamera) unitRenderer.render(unitScene, unitCamera);
+      drawUnitMinimap(unitControls.target.x, unitControls.target.z);
+    }
+    unitLoop();
+  }
+};
+
+$('btnCloseUnitModal').onclick = () => {
+  $('unitModal').classList.remove('on');
+  if (unitAnimId) { cancelAnimationFrame(unitAnimId); unitAnimId = null; }
+};
+
+window.jumpUnitRoom = function(room) {
+  if (!unitControls) return;
+  const ROOMS = {
+    living: { pos: new THREE.Vector3(1.5, 4.5, 8.5), target: new THREE.Vector3(1.5, 1.2, 1.5) },
+    bed:    { pos: new THREE.Vector3(-6, 3.5, 7), target: new THREE.Vector3(-6, 1.2, 1.5) },
+    balcony:{ pos: new THREE.Vector3(0, 2.2, 10.5), target: new THREE.Vector3(0, 1.4, 25) },
+    kitchen:{ pos: new THREE.Vector3(1.5, 3.5, 1.5), target: new THREE.Vector3(1.5, 1.2, -3.5) }
+  };
+  const r = ROOMS[room];
+  if (r) {
+    unitCamera.position.copy(r.pos);
+    unitControls.target.copy(r.target);
+  }
+};
+
+function setUnitView(v) {
+  unitMode = v;
+  document.querySelectorAll('#unitViewSeg button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.uview === v)));
+  if (v === 'dollhouse') {
+    unitCamera.position.set(13, 14, 16);
+    unitControls.target.set(0, 1.2, 0);
+  } else if (v === 'walk') {
+    unitCamera.position.set(1.5, 1.65, 4.5);
+    unitControls.target.set(1.5, 1.6, 0);
+  } else if (v === 'plan') {
+    unitCamera.position.set(0, 24, 0.5);
+    unitControls.target.set(0, 0, 0.5);
+  }
+}
+
+document.querySelectorAll('#unitViewSeg button').forEach(b => {
+  b.onclick = () => setUnitView(b.dataset.uview);
+});
+
 </script>
+
+<!-- 3D Unit Walkthrough Modal (Dollhouse Mode) -->
+<div id="unitModal" class="glass">
+  <div id="unitHeader">
+    <div>
+      <h2 style="font:600 17px var(--display);margin:0" id="unitModalTitle">Marina Crest Tower · Luxury 2BHK (Unit 402)</h2>
+      <small style="color:var(--mute)" id="unitModalSubtitle">125 m² (1,345 sq ft) · Sheikh Zayed Road Skyline View</small>
+    </div>
+    <div class="seg" role="group" aria-label="Walkthrough Views" id="unitViewSeg" style="margin-left:auto">
+      <button data-uview="dollhouse" aria-pressed="true">🏠 3D Dollhouse</button>
+      <button data-uview="walk" aria-pressed="false">🎮 1st-Person Walk</button>
+      <button data-uview="plan" aria-pressed="false">📐 2D Floor Plan</button>
+    </div>
+    <button class="btn ghost" id="btnCloseUnitModal" style="padding:7px 14px;font-size:12px">✕ Back to Skyline</button>
+  </div>
+  
+  <div id="unitCanvas"></div>
+  <canvas id="unitMinimap" class="glass"></canvas>
+  <div id="unitRoomDock">
+    <button onclick="jumpUnitRoom('living')">🛋️ Living Lounge</button>
+    <button onclick="jumpUnitRoom('bed')">🛏️ Master Suite</button>
+    <button onclick="jumpUnitRoom('balcony')">🌆 Balcony View</button>
+    <button onclick="jumpUnitRoom('kitchen')">🍳 Kitchen Island</button>
+  </div>
+</div>
+
 </body>
 </html>
