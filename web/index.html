@@ -112,6 +112,21 @@
     header { height:auto; flex-wrap:wrap; padding:10px 14px; gap:10px } .seg { margin-left:0; width:100%; overflow-x:auto } .chip { display:none }
     aside { top:auto; left:8px; right:8px; width:auto; height:52vh; bottom:8px } #drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:52vh }
   }
+  /* layout polish: the header and tabs fit any width */
+  header { gap:14px; min-width:0 }
+  .brand { flex:none; min-width:0 } .brand > div { min-width:0 }
+  .brand h1 { white-space:nowrap }
+  .brand small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px }
+  #asof, #btnLaunchWalkthrough { flex:none }
+  .controls { margin-left:auto; display:flex; gap:8px; min-width:0; overflow-x:auto; scrollbar-width:none; padding:2px 0; mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%) }
+  .controls::-webkit-scrollbar { display:none }
+  .controls .seg { margin-left:0; flex:none }
+  .tabs { flex-wrap:wrap; overflow:visible; row-gap:0 }
+  .tabs button { padding:9px 10px 10px; font-size:12.5px }
+  @media (max-width: 1500px) { .brand small { display:none } }
+  @media (max-width: 1280px) { #asof { display:none } .seg button { padding:7px 10px; font-size:12.5px } }
+  @media (max-width: 1100px) { aside { width:340px } }
+  @media (max-width: 760px) { .controls { width:100%; margin-left:0 } #btnLaunchWalkthrough { display:none } aside { width:auto } }
   @media (prefers-reduced-motion: reduce) { #drawer { transition:none } }
 </style>
 </head>
@@ -127,7 +142,8 @@
   <span class="chip" id="asof">Sample portfolio</span>
   <button class="chip" id="btnLaunchWalkthrough" style="cursor:pointer;background:rgba(232,182,90,0.1);display:inline-flex;align-items:center;gap:5px;border-color:rgba(232,182,90,0.4)">💡 Quick Tour</button>
   
-  <div class="seg" role="group" aria-label="Camera Views" id="camViews" style="margin-left:auto">
+  <div class="controls">
+  <div class="seg" role="group" aria-label="Camera Views" id="camViews">
     <button data-cam="szr" aria-pressed="true">🛣️ SZR Corridor</button>
     <button data-cam="drive" aria-pressed="false">🚗 Highway Drive</button>
     <button data-cam="motf" aria-pressed="false">🏛️ Museum of Future</button>
@@ -144,6 +160,7 @@
     <button data-mode="expiry" aria-pressed="true">Lease expiry</button>
     <button data-mode="rera" aria-pressed="false">RERA compliance</button>
     <button data-mode="occupancy" aria-pressed="false">Occupancy</button>
+  </div>
   </div>
 </header>
 
@@ -383,11 +400,11 @@ const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x0e1526, 0.0014);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 2500);
-camera.position.set(165, 85, 175);
+camera.position.set(80, 120, 240);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.06;
 controls.maxPolarAngle = Math.PI * 0.485; controls.minDistance = 25; controls.maxDistance = 650;
-controls.target.set(0, 25, -20);
+controls.target.set(-40, 30, -54);
 controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.25;
 controls.addEventListener("start", () => { controls.autoRotate = false; stopTour(); });
 
@@ -751,14 +768,17 @@ for (const [tx, th] of [[135, 160], [170, 140]]) {
 const oppGlass = new THREE.MeshStandardMaterial({ color: 0x152238, metalness: 0.85, roughness: 0.2, emissive: 0x0c1626 });
 const oppFrame = new THREE.MeshStandardMaterial({ color: 0x223046, metalness: 0.6, roughness: 0.4 });
 const oppCrownMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.3, emissive: 0x0369a1, emissiveIntensity: 0.4 });
+const oppTowers = [];   // fade when the camera looks across the road at the portfolio
 for (let i = 0; i < 9; i++) {
   const ox = -250 + i * 58;
   const oh = 48 + Math.sin(i * 1.8) * 35 + (i % 2 ? 42 : 18);
   const ow = 22 + (i % 3) * 5;
-  const bldg = new THREE.Mesh(new THREE.BoxGeometry(ow, oh, 18), oppGlass);
+  const bldg = new THREE.Mesh(new THREE.BoxGeometry(ow, oh, 18), oppGlass.clone());
   bldg.position.set(ox, oh / 2, 68); scene.add(bldg);
-  const crown = new THREE.Mesh(new THREE.BoxGeometry(ow + 0.4, 2.5, 18.4), oppCrownMat);
+  const crown = new THREE.Mesh(new THREE.BoxGeometry(ow + 0.4, 2.5, 18.4), oppCrownMat.clone());
   crown.position.set(ox, oh + 1.25, 68); scene.add(crown);
+  for (const m of [bldg, crown]) { m.material.transparent = true; oppTowers.push(m); }
+  crown.userData.crown = true;
 }
 
 // 4. Background City Depth Grid (160 distant towers)
@@ -1016,7 +1036,7 @@ document.querySelectorAll("#dayNightToggle button").forEach(b => {
 
 /* ---------------- Camera Modes & SZR 45s Tour ---------------- */
 const CAM_PRESETS = {
-  szr: { pos: new THREE.Vector3(165, 85, 175), target: new THREE.Vector3(0, 25, -20) },
+  szr: { pos: new THREE.Vector3(80, 120, 240), target: new THREE.Vector3(-40, 30, -54) },
   drive: { pos: new THREE.Vector3(-95, 8, 22), target: new THREE.Vector3(45, 18, -45) },
   motf: { pos: new THREE.Vector3(220, 24, 15), target: new THREE.Vector3(220, 20, -54) },
   downtown: { pos: new THREE.Vector3(120, 65, 95), target: new THREE.Vector3(-150, 50, -90) }
@@ -1430,6 +1450,18 @@ addEventListener("resize", resize); resize();
 
 const clock = new THREE.Clock();
 (function loop() {
+  {
+    // Towers on the south side of SZR stand between a south camera and the portfolio: fade them to glass
+    const blocking = camera.position.z > 80 && controls.target.z < 60;
+    const want = blocking ? 0.16 : 1;
+    for (const m of oppTowers) {
+      const o = oppTowers.settled ? m.material.opacity + (want - m.material.opacity) * 0.12 : want;   // first frame: start in place
+      m.material.opacity = Math.abs(o - want) < 0.01 ? want : o;
+      m.material.depthWrite = m.material.opacity > 0.95;
+      if (m.userData.crown) m.visible = m.material.opacity > 0.5;   // a glowing roof floating over a faded tower looks wrong
+    }
+    oppTowers.settled = true;
+  }
   const dt = clock.getDelta(), t = clock.elapsedTime;
 
   // Smooth Camera Flights
