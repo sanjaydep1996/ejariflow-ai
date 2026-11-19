@@ -112,6 +112,21 @@
     header { height:auto; flex-wrap:wrap; padding:10px 14px; gap:10px } .seg { margin-left:0; width:100%; overflow-x:auto } .chip { display:none }
     aside { top:auto; left:8px; right:8px; width:auto; height:52vh; bottom:8px } #drawer { left:8px; right:8px; width:auto; top:auto; bottom:8px; max-height:52vh }
   }
+  /* layout polish: the header and tabs fit any width */
+  header { gap:14px; min-width:0 }
+  .brand { flex:none; min-width:0 } .brand > div { min-width:0 }
+  .brand h1 { white-space:nowrap }
+  .brand small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:300px }
+  #asof, #btnLaunchWalkthrough { flex:none }
+  .controls { margin-left:auto; display:flex; gap:8px; min-width:0; overflow-x:auto; scrollbar-width:none; padding:2px 0; mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%); -webkit-mask-image:linear-gradient(90deg, transparent 0, #000 14px, #000 calc(100% - 14px), transparent 100%) }
+  .controls::-webkit-scrollbar { display:none }
+  .controls .seg { margin-left:0; flex:none }
+  .tabs { flex-wrap:wrap; overflow:visible; row-gap:0 }
+  .tabs button { padding:9px 10px 10px; font-size:12.5px }
+  @media (max-width: 1500px) { .brand small { display:none } }
+  @media (max-width: 1280px) { #asof { display:none } .seg button { padding:7px 10px; font-size:12.5px } }
+  @media (max-width: 1100px) { aside { width:340px } }
+  @media (max-width: 760px) { .controls { width:100%; margin-left:0 } #btnLaunchWalkthrough { display:none } aside { width:auto } }
   @media (prefers-reduced-motion: reduce) { #drawer { transition:none } }
 </style>
 </head>
@@ -127,7 +142,8 @@
   <span class="chip" id="asof">Sample portfolio</span>
   <button class="chip" id="btnLaunchWalkthrough" style="cursor:pointer;background:rgba(232,182,90,0.1);display:inline-flex;align-items:center;gap:5px;border-color:rgba(232,182,90,0.4)">💡 Quick Tour</button>
   
-  <div class="seg" role="group" aria-label="Camera Views" id="camViews" style="margin-left:auto">
+  <div class="controls">
+  <div class="seg" role="group" aria-label="Camera Views" id="camViews">
     <button data-cam="szr" aria-pressed="true">🛣️ SZR Corridor</button>
     <button data-cam="drive" aria-pressed="false">🚗 Highway Drive</button>
     <button data-cam="motf" aria-pressed="false">🏛️ Museum of Future</button>
@@ -144,6 +160,7 @@
     <button data-mode="expiry" aria-pressed="true">Lease expiry</button>
     <button data-mode="rera" aria-pressed="false">RERA compliance</button>
     <button data-mode="occupancy" aria-pressed="false">Occupancy</button>
+  </div>
   </div>
 </header>
 
@@ -328,6 +345,7 @@ import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
 import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
 import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
 import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { RoomEnvironment } from "three/addons/environments/RoomEnvironment.js";
 
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -377,17 +395,51 @@ const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 renderer.toneMapping = THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure = 1.05;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 host.appendChild(renderer.domElement);
 
 const scene = new THREE.Scene();
+// Image-based lighting: glass and metal reflect a soft studio environment instead of looking flat
+const pmrem = new THREE.PMREMGenerator(renderer);
+scene.environment = pmrem.fromScene(new RoomEnvironment(renderer), 0.04).texture;
+
+// Office-tower facades: a curtain wall of glass panels, some lit warm, some cool, most dark
+const facadeMats = [];
+function makeFacadeTexture(seed, lit = 0.35) {
+  let x = seed * 9301 + 49297; const rnd = () => ((x = (x * 9301 + 49297) % 233280) / 233280);
+  const c = document.createElement("canvas"); c.width = 256; c.height = 512; const g = c.getContext("2d");
+  const bg = g.createLinearGradient(0, 0, 0, 512); bg.addColorStop(0, "#1b2638"); bg.addColorStop(1, "#0e1522");
+  g.fillStyle = bg; g.fillRect(0, 0, 256, 512);
+  const cols = 8, rows = 24, cw = 256 / cols, rh = 512 / rows;
+  for (let r = 0; r < rows; r++) {
+    const floorLit = rnd() < 0.25;                      // whole floors tend to be lit together, like real offices
+    for (let k = 0; k < cols; k++) {
+      const on = rnd() < (floorLit ? 0.85 : lit * 0.6);
+      g.fillStyle = on ? (rnd() < 0.75 ? `rgba(255,${200 + rnd() * 30 | 0},${130 + rnd() * 40 | 0},${0.65 + rnd() * 0.35})` : "rgba(190,225,255,.8)")
+                       : `rgba(${40 + rnd() * 20 | 0},${58 + rnd() * 20 | 0},${84 + rnd() * 25 | 0},.9)`;
+      g.fillRect(k * cw + 2, r * rh + 3, cw - 4, rh - 6);
+    }
+  }
+  g.fillStyle = "rgba(120,140,170,.35)";                  // mullions and floor lines
+  for (let k = 0; k <= cols; k++) g.fillRect(k * cw - 1, 0, 2, 512);
+  for (let r = 0; r <= rows; r++) g.fillRect(0, r * rh - 1, 256, 2);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8;
+  return t;
+}
+function facadeMaterial(seed, repeatX, repeatY, lit) {
+  const tex = makeFacadeTexture(seed, lit); tex.repeat.set(repeatX, repeatY);
+  const m = new THREE.MeshStandardMaterial({ map: tex, emissiveMap: tex, emissive: 0xffffff, emissiveIntensity: 0.85, metalness: 0.55, roughness: 0.28, envMapIntensity: 0.6 });
+  facadeMats.push(m); return m;
+}
 scene.fog = new THREE.FogExp2(0x0e1526, 0.0014);
 
 const camera = new THREE.PerspectiveCamera(42, 1, 0.5, 2500);
-camera.position.set(165, 85, 175);
+camera.position.set(95, 115, 235);
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enableDamping = true; controls.dampingFactor = 0.06;
 controls.maxPolarAngle = Math.PI * 0.485; controls.minDistance = 25; controls.maxDistance = 650;
-controls.target.set(0, 25, -20);
+controls.target.set(-15, 30, -54);
 controls.autoRotate = !reduceMotion; controls.autoRotateSpeed = 0.25;
 controls.addEventListener("start", () => { controls.autoRotate = false; stopTour(); });
 
@@ -397,6 +449,8 @@ scene.add(hemiLight);
 
 const dirLight = new THREE.DirectionalLight(0xbdd4ff, 0.95);
 dirLight.position.set(-140, 260, 90);
+dirLight.castShadow = true; dirLight.shadow.mapSize.set(2048, 2048); dirLight.shadow.bias = -0.0004; dirLight.shadow.normalBias = 0.6;
+Object.assign(dirLight.shadow.camera, { left: -280, right: 280, top: 220, bottom: -220, near: 10, far: 700 });
 scene.add(dirLight);
 
 // Warm highway & skyline ambient lights (brightens the city)
@@ -407,6 +461,7 @@ const dtownFill = new THREE.PointLight(0x7dd3fc, 240, 380, 1.8); dtownFill.posit
 
 // Ground plain (warm dark asphalt/sand tone, not pitch black)
 const ground = new THREE.Mesh(new THREE.CircleGeometry(950, 64), new THREE.MeshStandardMaterial({ color: 0x121824, roughness: 0.9 }));
+ground.receiveShadow = true;
 ground.rotation.x = -Math.PI / 2; scene.add(ground);
 
 // Dubai Canal / Waterfront
@@ -459,8 +514,15 @@ const streetLamps = [];
 const poleGeo = new THREE.CylinderGeometry(0.18, 0.22, 11, 8);
 const poleMat = new THREE.MeshStandardMaterial({ color: 0x3b4758, metalness: 0.7, roughness: 0.3 });
 const lampHeadGeo = new THREE.SphereGeometry(0.55, 8, 8);
-const lampGlowGeo = new THREE.CircleGeometry(6.5, 16);
-const lampGlowMat = new THREE.MeshBasicMaterial({ color: 0xffe28a, transparent: true, opacity: 0.16, depthWrite: false });
+const lampGlowGeo = new THREE.PlaneGeometry(15, 15);
+const lampGlowTex = (() => {          // a soft radial falloff, so each pool reads as light, not as a painted disc
+  const c = document.createElement("canvas"); c.width = c.height = 128; const g = c.getContext("2d");
+  const r = g.createRadialGradient(64, 64, 0, 64, 64, 64);
+  r.addColorStop(0, "rgba(255,226,150,1)"); r.addColorStop(0.35, "rgba(255,210,120,.45)"); r.addColorStop(1, "rgba(255,200,110,0)");
+  g.fillStyle = r; g.fillRect(0, 0, 128, 128);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+})();
+const lampGlowMat = new THREE.MeshBasicMaterial({ map: lampGlowTex, color: 0xffffff, transparent: true, opacity: 0.32, depthWrite: false, blending: THREE.AdditiveBlending });
 lampGlowMat.polygonOffset = true; lampGlowMat.polygonOffsetFactor = -1;
 
 function makeStreetLight(x, z, armDir) {
@@ -751,19 +813,23 @@ for (const [tx, th] of [[135, 160], [170, 140]]) {
 const oppGlass = new THREE.MeshStandardMaterial({ color: 0x152238, metalness: 0.85, roughness: 0.2, emissive: 0x0c1626 });
 const oppFrame = new THREE.MeshStandardMaterial({ color: 0x223046, metalness: 0.6, roughness: 0.4 });
 const oppCrownMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.7, roughness: 0.3, emissive: 0x0369a1, emissiveIntensity: 0.4 });
+const oppTowers = [];   // fade when the camera looks across the road at the portfolio
 for (let i = 0; i < 9; i++) {
   const ox = -250 + i * 58;
   const oh = 48 + Math.sin(i * 1.8) * 35 + (i % 2 ? 42 : 18);
   const ow = 22 + (i % 3) * 5;
-  const bldg = new THREE.Mesh(new THREE.BoxGeometry(ow, oh, 18), oppGlass);
+  const bldg = new THREE.Mesh(new THREE.BoxGeometry(ow, oh, 18), facadeMaterial(i + 3, ow / 9, oh / 22, 0.32));
+  bldg.castShadow = true;
   bldg.position.set(ox, oh / 2, 68); scene.add(bldg);
-  const crown = new THREE.Mesh(new THREE.BoxGeometry(ow + 0.4, 2.5, 18.4), oppCrownMat);
+  const crown = new THREE.Mesh(new THREE.BoxGeometry(ow + 0.4, 2.5, 18.4), oppCrownMat.clone());
   crown.position.set(ox, oh + 1.25, 68); scene.add(crown);
+  for (const m of [bldg, crown]) { m.material.transparent = true; oppTowers.push(m); }
+  crown.userData.crown = true;
 }
 
 // 4. Background City Depth Grid (160 distant towers)
 {
-  const geo = new THREE.BoxGeometry(1, 1, 1), mat = new THREE.MeshStandardMaterial({ color: 0x101828, emissive: 0x0e1624, roughness: 0.8 });
+  const geo = new THREE.BoxGeometry(1, 1, 1), mat = facadeMaterial(41, 1.4, 3, 0.28);
   const n = 160, mesh = new THREE.InstancedMesh(geo, mat, n), m = new THREE.Matrix4(); let k = 0;
   for (let i = 0; i < n; i++) {
     const a = (i / n) * Math.PI * 2 + Math.random() * 0.04, d = 310 + Math.random() * 160, h = 18 + Math.pow(Math.random(), 2) * 125, w = 9 + Math.random() * 16;
@@ -774,7 +840,7 @@ for (let i = 0; i < 9; i++) {
 
 /* ---------------- Portfolio Buildings (North SZR Frontage) ---------------- */
 const windows = [], bodies = [], groups = {};
-const glass = new THREE.MeshStandardMaterial({ color: 0x0d1527, metalness: 0.88, roughness: 0.18, emissive: 0x050a14 });
+const glass = new THREE.MeshPhysicalMaterial({ color: 0x24344f, metalness: 0.7, roughness: 0.08, clearcoat: 1, clearcoatRoughness: 0.06, envMapIntensity: 1.1, emissive: 0x050a14 });
 const frameBldg = new THREE.MeshStandardMaterial({ color: 0x1f293d, metalness: 0.6, roughness: 0.45 });
 const podMat = new THREE.MeshStandardMaterial({ color: 0x101726, metalness: 0.4, roughness: 0.65 });
 const goldTrim = new THREE.MeshStandardMaterial({ color: 0xd4af37, metalness: 0.7, roughness: 0.3, emissive: 0x8a6d20, emissiveIntensity: 0.32 });
@@ -784,13 +850,13 @@ const FLOOR_H = 3.2, UNIT_W = 4.2, DEPTH = 15;
 const winGeo = new THREE.PlaneGeometry(UNIT_W * 0.74, FLOOR_H * 0.62);
 
 function labelSprite(text, sub) {
-  const c = document.createElement("canvas"); c.width = 640; c.height = 170; const g = c.getContext("2d");
-  g.fillStyle = "rgba(10,15,26,.88)"; g.strokeStyle = "rgba(232,182,90,.65)"; g.lineWidth = 3;
-  g.beginPath(); g.roundRect(6, 6, 628, 158, 34); g.fill(); g.stroke();
-  g.fillStyle = "#eef2f8"; g.font = "600 50px 'Space Grotesk', Arial"; g.textAlign = "center"; g.fillText(text, 320, 78);
-  g.fillStyle = "#f6d28b"; g.font = "500 32px 'Inter', Arial"; g.fillText(sub, 320, 130);
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace;
-  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); s.scale.set(30, 8, 1); s.renderOrder = 10; return s;
+  const c = document.createElement("canvas"); c.width = 1280; c.height = 300; const g = c.getContext("2d");
+  g.fillStyle = "rgba(10,15,26,.9)"; g.strokeStyle = "rgba(232,182,90,.75)"; g.lineWidth = 5;
+  g.beginPath(); g.roundRect(8, 8, 1264, 284, 60); g.fill(); g.stroke();
+  g.fillStyle = "#eef2f8"; g.font = "600 104px 'Space Grotesk', Arial"; g.textAlign = "center"; g.fillText(text, 640, 140);
+  g.fillStyle = "#f6d28b"; g.font = "500 64px 'Inter', Arial"; g.fillText(sub, 640, 238);
+  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.anisotropy = 4;
+  const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false })); s.scale.set(46, 10.8, 1); s.renderOrder = 10; return s;
 }
 
 function addBuilding(b, x, z) {
@@ -813,6 +879,10 @@ function addBuilding(b, x, z) {
   // Main tower body
   const body = new THREE.Mesh(new THREE.BoxGeometry(W, H, DEPTH), glass);
   body.position.y = 4.7 + H / 2; body.userData.building = b; g.add(body); bodies.push(body);
+  body.castShadow = true; body.receiveShadow = true;
+  const edges = new THREE.LineSegments(new THREE.EdgesGeometry(body.geometry),
+    new THREE.LineBasicMaterial({ color: b.style === "twin" ? 0x7dd3fc : 0xf6d28b, transparent: true, opacity: 0.55 }));
+  edges.position.copy(body.position); g.add(edges);
 
   // Floor slabs & balcony edges
   const slabGeo = new THREE.BoxGeometry(W + 0.6, 0.25, DEPTH + 1.1);
@@ -982,6 +1052,8 @@ function setTimeOfDay(tod) {
     water.material.color.setHex(0x0284c7);
     water.material.emissive.setHex(0x0369a1);
     if (window.motfGlowMat) window.motfGlowMat.emissiveIntensity = 0.25;
+    facadeMats.forEach(m => { m.emissiveIntensity = 0.06; m.envMapIntensity = 1.0; m.color.setHex(0x6d88ad); m.roughness = 0.16; });   // daylight: blue reflective glass
+    glass.envMapIntensity = 1.4;
   } else {
     host.style.background = "radial-gradient(130% 90% at 50% 100%, #2e1a2b 0%, #171b32 30%, #0d1222 65%, #060912 100%)";
     scene.fog.color.setHex(0x0e1526);
@@ -997,6 +1069,8 @@ function setTimeOfDay(tod) {
     water.material.color.setHex(0x0a2238);
     water.material.emissive.setHex(0x051322);
     if (window.motfGlowMat) window.motfGlowMat.emissiveIntensity = 1.25;
+    facadeMats.forEach(m => { m.emissiveIntensity = 0.85; m.envMapIntensity = 0.35; m.color.setHex(0xffffff); m.roughness = 0.28; });
+    glass.envMapIntensity = 0.55;
   }
 
   // Update Streetlight and Car Materials
@@ -1016,7 +1090,7 @@ document.querySelectorAll("#dayNightToggle button").forEach(b => {
 
 /* ---------------- Camera Modes & SZR 45s Tour ---------------- */
 const CAM_PRESETS = {
-  szr: { pos: new THREE.Vector3(165, 85, 175), target: new THREE.Vector3(0, 25, -20) },
+  szr: { pos: new THREE.Vector3(95, 115, 235), target: new THREE.Vector3(-15, 30, -54) },
   drive: { pos: new THREE.Vector3(-95, 8, 22), target: new THREE.Vector3(45, 18, -45) },
   motf: { pos: new THREE.Vector3(220, 24, 15), target: new THREE.Vector3(220, 20, -54) },
   downtown: { pos: new THREE.Vector3(120, 65, 95), target: new THREE.Vector3(-150, 50, -90) }
@@ -1424,12 +1498,32 @@ fetch("/api/portfolio")
 /* ---------------- Render Loop & Animation ---------------- */
 function resize() {
   const w = innerWidth, h = innerHeight; renderer.setSize(w, h); composer.setSize(w, h); bloom.setSize(w, h);
-  camera.aspect = w / h; camera.updateProjectionMatrix();
+  // On wide screens the left panel covers part of the canvas: shift the projection so the scene's
+  // centre sits in the middle of the free area. Picking still works: the raycaster uses the same matrix.
+  const r = document.querySelector("aside")?.getBoundingClientRect();
+  const sideColumn = r && r.height > h * 0.5 && r.right < w * 0.45;     // the panel is a left column, not a bottom sheet
+  const off = sideColumn ? Math.round(r.right) : 0;
+  if (off) { camera.aspect = (w + off) / h; camera.setViewOffset(w + off, h, 0, 0, w, h); }
+  else { camera.aspect = w / h; camera.clearViewOffset(); }
+  camera.updateProjectionMatrix();
 }
 addEventListener("resize", resize); resize();
 
 const clock = new THREE.Clock();
 (function loop() {
+  {
+    // Towers on the south side of SZR stand between a south camera and the portfolio: fade them to glass
+    const blocking = camera.position.z > 80 && controls.target.z < 60;
+    const want = blocking ? 0.1 : 1;
+    for (const m of oppTowers) {
+      const o = oppTowers.settled ? m.material.opacity + (want - m.material.opacity) * 0.12 : want;   // first frame: start in place
+      m.material.opacity = Math.abs(o - want) < 0.01 ? want : o;
+      m.material.depthWrite = m.material.opacity > 0.95;
+      if (m.material.emissiveMap) m.material.emissiveIntensity = (timeOfDay === "day" ? 0.06 : 0.85) * Math.pow(m.material.opacity, 2);   // lit windows fade with the tower
+      if (m.userData.crown) m.visible = m.material.opacity > 0.5;   // a glowing roof floating over a faded tower looks wrong
+    }
+    oppTowers.settled = true;
+  }
   const dt = clock.getDelta(), t = clock.elapsedTime;
 
   // Smooth Camera Flights
