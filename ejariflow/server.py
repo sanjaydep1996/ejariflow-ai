@@ -22,6 +22,10 @@ from .portfolio import analyse, load_sample
 from .rdsc import forecast_eviction_case
 from .smart_index import evaluate_smart_index
 from .uaedds import generate_uaedds_schedule, validate_uae_iban
+from .dewa_cooling import forecast_tenancy_utilities
+from .golden_visa import evaluate_golden_visa_eligibility
+from .notice_bot import dispatch_renewal_notice
+from .transit_twin import calculate_transit_profile, METRO_STATIONS
 
 WEB = pathlib.Path(__file__).resolve().parent.parent / "web"
 MAX_BODY = 2_000_000
@@ -99,6 +103,46 @@ def route(method: str, path: str, p: Dict[str, Any]) -> Tuple[int, Any]:
             is_furnished=bool(p.get("is_furnished"))
         )
         return 200, res
+    if method == "POST" and path == "/api/utilities/forecast":
+        res = forecast_tenancy_utilities(
+            sqft=_num(p, "sqft") if "sqft" in p else 1000.0,
+            annual_rent=_num(p, "annual_rent") if "annual_rent" in p else 85000.0,
+            chiller_type=str(p.get("chiller_type") or "district_cooling"),
+            occupants=int(p.get("occupants") or 2)
+        )
+        return 200, res
+    if method == "POST" and path == "/api/golden-visa/evaluate":
+        res = evaluate_golden_visa_eligibility(
+            properties=list(p.get("properties") or []),
+            applicant_name=str(p.get("applicant_name") or "Investor"),
+            is_spousal_joint=bool(p.get("is_spousal_joint")),
+            has_uae_health_insurance=bool(p.get("has_uae_health_insurance", True))
+        )
+        return 200, res
+    if method == "POST" and path == "/api/notices/dispatch":
+        res = dispatch_renewal_notice(
+            ejari_number=str(p.get("ejari_number") or "EJ-2024-998811"),
+            tenant_name=str(p.get("tenant_name") or "Tenant"),
+            tenant_phone=str(p.get("tenant_phone") or "+971501234567"),
+            tenant_email=str(p.get("tenant_email") or "tenant@example.com"),
+            property_name=str(p.get("property_name") or "SZR Tower"),
+            unit_number=str(p.get("unit_number") or "1204"),
+            current_rent=_num(p, "current_rent") if "current_rent" in p else 90000.0,
+            proposed_rent=_num(p, "proposed_rent") if "proposed_rent" in p else 99000.0,
+            expiry_date=str(p.get("expiry_date") or (dt.date.today() + dt.timedelta(days=95)).isoformat()),
+            channel=str(p.get("channel") or "whatsapp_and_email"),
+            rera_cap_pct=_num(p, "rera_cap_pct") if "rera_cap_pct" in p else 10.0
+        )
+        return 200, res
+    if method == "POST" and path == "/api/transit/profile":
+        res = calculate_transit_profile(
+            property_name=str(p.get("property_name") or "SZR Tower"),
+            x=_num(p, "x") if "x" in p else 0.0,
+            z=_num(p, "z") if "z" in p else -46.0
+        )
+        return 200, res
+    if method == "GET" and path == "/api/transit/stations":
+        return 200, {"stations": METRO_STATIONS}
     return 404, {"error": "Not found"}
 
 
