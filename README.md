@@ -10,7 +10,7 @@
 
 EjariFlow AI reads Dubai tenancy contracts (English and Arabic), checks them against Dubai's rent laws, and shows a whole property portfolio as an interactive 3D map, so brokers, property managers and PropTech teams can spot non-compliant contracts and expiring leases before they become disputes.
 
-> **Status:** v1.0.0 Enterprise Release. Complete Dubai PropTech & LegalTech platform: DLD Smart Rental Index 5-star building classification, 2D Floor Plan to 3D Apartment Walkthrough (Dollhouse Mode), RDSC Legal Risk & Eviction Forecaster, UAE Direct Debit System (UAEDDS) engine, and Sheikh Zayed Road 3D Digital Twin with Day/Night toggle and Museum of the Future. 34 automated tests passing.
+> **Status:** v1.1.0 Enterprise Suite. Complete Dubai PropTech & LegalTech platform: DLD Smart Rental Index 5-star rating, 2D to 3D Apartment Walkthrough, RDSC Legal Risk & Eviction Forecaster, UAE Direct Debit System (UAEDDS), DEWA & District Cooling Tariff Forecaster, 10-Year Golden Visa Screener, Interactive Metro Transit Twin, and Automated 90-Day Renewal Dispatcher with SHA-256 Proof of Delivery. 56 automated tests passing.
 
 ---
 
@@ -109,20 +109,42 @@ Implements the Central Bank of the UAE and DLD paperless rental mandate:
 - **UAE IBAN Validation:** Validates 23-character `AE` format and identifies UAE clearing banks (Emirates NBD, FAB, DIB, ADCB, Mashreq, CBD).
 - **Statutory Protection:** Tracks 30-day default cure periods under Law 26/2007 (Art. 25(1)(a)) and calculates statutory security deposit escrow.
 
-### 10. 🔌 Local REST API
-An interactive 3D map of every building and unit:
+### 10. ⚡ DEWA & District Cooling Tariff Forecaster
+Models utility operating costs for residential rentals across Dubai:
+- **Progressive Slab Tariffs:** Computes DEWA expatriate electricity (23 to 38 fils/kWh + 5 fils fuel surcharge) and water slabs (3.5 to 4.6 fils/IG).
+- **Dubai Municipality Housing Fee:** Automatically calculates the 5% statutory housing fee divided across 12 monthly installments.
+- **District Cooling vs. Chiller-Free:** Models refrigeration tonnage (RT), Empower/Tabreed capacity charges (AED 750/RT/year), and highlights annual tenant savings in chiller-free buildings.
 
-- **Colour = status:** lease > 6 months · ends in 3–6 months · ends in < 90 days (inside the renewal-notice window) · expired · **proposed rent over the RERA cap** · vacant.
-- **Hover a unit** to see its rent, lease end date, days left, and rent-cap check.
-- **Portfolio KPIs:** units, occupancy, annual rent roll, leases ending within 90 days, expired leases, proposals over the cap.
+### 11. 🏅 Dubai 10-Year Real Estate Golden Visa Screener
+Screens property assets against UAE Cabinet Resolutions and DLD Golden Visa criteria:
+- **Statutory Equity Check:** Evaluates whether paid equity across single, multiple, or mortgaged properties meets or exceeds **AED 2,000,000**.
+- **Special Ownership Modes:** Evaluates spousal joint ownership (combined >= AED 2M) and off-plan DLD Oqood registrations.
+- **DLD Readiness Checklist:** Prepares official documentation requirements (electronic Title Deed, Bank NOC/mortgage liability letter, health insurance, police clearance).
 
-### 6. 🔌 Local REST API
+### 12. 🚇 Interactive Dubai Metro Transit & Commute Isochrone Twin
+Spatial transit analysis along the Sheikh Zayed Road Red Line viaduct:
+- **Station Network:** Interactive 3D stations at World Trade Centre, Emirates Towers, Financial Centre, Burj Khalifa/Dubai Mall, and Business Bay.
+- **Walk-Shed Isochrones:** 5-minute (400m) and 10-minute (800m) pedestrian walk-shed radius rings drawn directly on the 3D ground plane.
+- **Commute Time Matrix:** Real-time door-to-door transit minutes to DIFC Gate Precinct, Downtown, DXB Airport Terminal 3, and Dubai Marina.
+
+### 13. 📲 Automated 90-Day Renewal Notice Bot with SHA-256 Proof of Delivery
+Statutory lease revision dispatcher under Dubai Law 26/2007 (Art. 14):
+- **Statutory Clock:** Validates the statutory 90-day notification window before contract expiry (flagging late, legally unenforceable rent adjustments).
+- **Cryptographic Certificate:** Produces an immutable **SHA-256 fingerprint** of the notice payload for evidentiary submission before the Rental Dispute Settlement Centre (RDSC).
+- **Multi-Channel Dispatch:** Generates parallel English and Arabic notices with simulated WhatsApp Business API and corporate SMTP delivery receipts.
+
+### 14. 🔌 Local REST API
 | Method | Endpoint | Does |
 |---|---|---|
 | `POST` | `/api/rera/check` | Decree 43/2013 rent increase check `{current_rent, proposed_rent, average_rent}` |
 | `POST` | `/api/rera/smart-index` | DLD 5-star building classification & upgrade simulator |
 | `POST` | `/api/rdsc/evaluate` | RDSC eviction legality & compensation liability forecaster |
 | `POST` | `/api/uaedds/schedule` | Central Bank UAEDDS direct debit schedule & IBAN validator |
+| `POST` | `/api/utilities/forecast` | DEWA & District cooling seasonal bill forecaster |
+| `POST` | `/api/golden-visa/evaluate` | UAE 10-Year Real Estate Golden Visa portfolio screener |
+| `POST` | `/api/notices/dispatch` | 90-day renewal notice dispatcher with SHA-256 proof |
+| `POST` | `/api/transit/profile` | SZR Metro proximity & multi-hub commute matrix |
+| `GET` | `/api/transit/stations` | All SZR Metro Red Line station coordinates |
 | `POST` | `/api/notice/generate` | Generates bilingual 90-day renewal notice (EN/AR) |
 | `POST` | `/api/contract/parse` | Contract text → fields `{text}` |
 | `POST` | `/api/contract/audit` | Parse + audit `{text, average_rent}` |
